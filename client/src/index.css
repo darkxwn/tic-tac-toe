@@ -1,0 +1,126 @@
+@import "tailwindcss";
+
+@layer base {
+  html, body {
+    @apply antialiased select-none;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    overscroll-behavior: none;
+  }
+}
+
+/* 1. Тема: Неоновая (Текущая Midnight Cyberpunk) */
+:root.theme-neon {
+  --bg-primary: #020617; /* slate-950 */
+  --bg-surface: #0f172a; /* slate-900 */
+  --bg-card: rgba(15, 23, 42, 0.75);
+  --border-color: #1e293b; /* slate-800 */
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --color-x: #22d3ee; /* cyan-400 */
+  --color-x-glow: rgba(34, 211, 238, 0.4);
+  --color-o: #fb7185; /* rose-400 */
+  --color-o-glow: rgba(251, 113, 133, 0.4);
+  --line-color: #38bdf8;
+}
+
+/* 2. Тема: Классическая Тёмная (Neutral Dark) */
+:root.theme-dark {
+  --bg-primary: #121212;
+  --bg-surface: #1e1e1e;
+  --bg-card: rgba(30, 30, 30, 0.85);
+  --border-color: #2e2e2e;
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0a0;
+  --color-x: #60a5fa; /* blue-400 */
+  --color-x-glow: rgba(96, 165, 250, 0.3);
+  --color-o: #f97316; /* orange-500 */
+  --color-o-glow: rgba(249, 115, 22, 0.3);
+  --line-color: #60a5fa;
+}
+
+/* 3. Тема: Светлая (Clean Light) */
+:root.theme-light {
+  --bg-primary: #f8fafc; /* slate-50 */
+  --bg-surface: #ffffff;
+  --bg-card: rgba(255, 255, 255, 0.95);
+  --border-color: #e2e8f0; /* slate-200 */
+  --text-primary: #0f172a; /* slate-900 */
+  --text-secondary: #64748b; /* slate-500 */
+  --color-x: #0284c7; /* sky-600 */
+  --color-x-glow: rgba(2, 132, 199, 0.2);
+  --color-o: #e11d48; /* rose-600 */
+  --color-o-glow: rgba(225, 29, 72, 0.2);
+  --line-color: #0284c7;
+}
+
+/* Fallback по умолчанию если класс еще не навешен (Тёмная тема) */
+:root:not([class*="theme-"]) {
+  --bg-primary: #121212;
+  --bg-surface: #1e1e1e;
+  --bg-card: rgba(30, 30, 30, 0.85);
+  --border-color: #2e2e2e;
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0a0;
+  --color-x: #60a5fa;
+  --color-x-glow: rgba(96, 165, 250, 0.3);
+  --color-o: #f97316;
+  --color-o-glow: rgba(249, 115, 22, 0.3);
+  --line-color: #60a5fa;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100dvh;
+}
+
+@keyframes critical-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.45;
+  }
+  50% {
+    transform: scale(0.92);
+    opacity: 0.25;
+  }
+}
+
+.animate-critical {
+  animation: critical-pulse 1.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pop-in {
+  0% {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-pop {
+  animation: pop-in 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* Анимация прочерчивания победной линии */
+@keyframes draw-line {
+  0% {
+    stroke-dashoffset: 600;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+.animate-strike-line {
+  stroke-dasharray: 600;
+  stroke-dashoffset: 600;
+  animation: draw-line 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
