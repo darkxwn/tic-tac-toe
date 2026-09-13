@@ -52,10 +52,10 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
           <button
             type="button"
             onClick={onConfirm}
-            className="w-full py-2.5 px-4 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-rose-600/25 active:scale-95"
+            className="w-full py-2.5 px-4 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-rose-600/25 active:scale-95 whitespace-nowrap"
           >
-            <LogOut className="w-3.5 h-3.5" />
-            <span>{confirmText}</span>
+            <LogOut className="w-3.5 h-3.5 shrink-0" />
+            <span className="whitespace-nowrap">{confirmText}</span>
           </button>
 
           <button

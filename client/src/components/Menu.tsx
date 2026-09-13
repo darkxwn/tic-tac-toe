@@ -52,6 +52,7 @@ export const Menu: React.FC<MenuProps> = ({
   onStartOnlineJoin,
 }) => {
   const [view, setView] = useState<MenuView>('main');
+  const [previousView, setPreviousView] = useState<MenuView>('main');
   const [selectedDifficulty, setSelectedDifficulty] = useState<BotDifficulty>('medium');
   const [hotseatOpponentName, setHotseatOpponentName] = useState('');
   const [multiplayerTab, setMultiplayerTab] = useState<'hotseat' | 'online'>('hotseat');
@@ -89,11 +90,20 @@ export const Menu: React.FC<MenuProps> = ({
     }
   };
 
+  const handleOpenStats = () => {
+    setPreviousView(view);
+    setView('stats');
+  };
+
+  const handleCloseStats = () => {
+    setView(previousView === 'stats' ? 'main' : previousView);
+  };
+
   // Экран статистики
   if (view === 'stats') {
     return (
       <div className="w-full max-w-sm sm:max-w-xl mx-auto">
-        <StatsView stats={stats} t={t} onBack={() => setView('main')} onReset={onResetStats} />
+        <StatsView stats={stats} t={t} onBack={handleCloseStats} onReset={onResetStats} />
       </div>
     );
   }
@@ -160,10 +170,10 @@ export const Menu: React.FC<MenuProps> = ({
           </div>
         </div>
 
-        {/* Кнопка перехода в статистику */}
+        {/* Кнопка перехода в статистику с фиксированной шириной */}
         <button
           type="button"
-          onClick={() => setView('stats')}
+          onClick={handleOpenStats}
           title={t.statsBtn}
           className="self-stretch w-[84px] sm:w-[96px] shrink-0 px-1 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-amber-500/50 text-[var(--text-secondary)] hover:text-amber-400 flex flex-col items-center justify-center gap-1 transition-all cursor-pointer shadow-sm active:scale-95 group"
         >

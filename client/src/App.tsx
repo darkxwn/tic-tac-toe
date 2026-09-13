@@ -154,7 +154,11 @@ export function App() {
 
   // Подключение по коду
   const handleJoinRoom = (code: string) => {
-    network.joinRoom(code, playerName);
+    const cleanCode = code.trim().toUpperCase();
+    if (network.roomCode && cleanCode === network.roomCode.toUpperCase()) {
+      return;
+    }
+    network.joinRoom(cleanCode, playerName);
     triggerSound('click');
   };
 
@@ -327,16 +331,16 @@ export function App() {
   const activeWinning = isOnlinePlaying ? network.winningState : winningState;
 
   return (
-    <main className="min-h-[100dvh] w-full flex flex-col justify-between pt-8 pb-3 px-4 sm:p-6 max-w-xl mx-auto select-none">
+    <main className="min-h-[100dvh] w-full flex flex-col justify-between pt-14 pb-3 px-4 sm:p-6 max-w-xl mx-auto select-none">
       {/* Верхняя панель: Кнопка возврата, выбор темы, язык, звук, музыка или кнопка настроек */}
       <header className="flex items-center justify-between w-full mb-3 sm:mb-4 gap-2">
         {gameMode ? (
           <button
             onClick={handleRequestGoHome}
-            className="h-9 sm:h-10 px-3 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all flex items-center gap-1.5 text-xs font-bold cursor-pointer active:scale-95"
+            className="h-9 sm:h-10 px-3 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all flex items-center gap-1.5 text-xs font-bold cursor-pointer active:scale-95 whitespace-nowrap shrink-0"
           >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="hidden sm:inline">{t.menuBtn}</span>
+            <ArrowLeft className="w-4 h-4 shrink-0" />
+            <span className="hidden sm:inline whitespace-nowrap">{t.menuBtn}</span>
           </button>
         ) : (
           <div />
@@ -478,8 +482,13 @@ export function App() {
             <span>{network.errorMessage}</span>
           </div>
           <button
-            onClick={handleGoHome}
-            className="px-2.5 py-1 bg-rose-900 hover:bg-rose-800 text-white rounded-lg font-bold text-[11px] cursor-pointer"
+            onClick={() => {
+              network.clearError();
+              if (gameMode === 'online') {
+                handleGoHome();
+              }
+            }}
+            className="px-3 py-1.5 bg-rose-900 hover:bg-rose-800 text-white rounded-xl font-bold text-xs cursor-pointer active:scale-95 transition-all shadow-sm"
           >
             OK
           </button>
@@ -573,7 +582,11 @@ export function App() {
             back: t.back,
           }}
           onJoinRoom={handleJoinRoom}
-          onCancel={handleGoHome}
+          onCancel={() => {
+            setShowLobbyModal(false);
+            network.leaveRoom();
+            handleGoHome();
+          }}
         />
       )}
 

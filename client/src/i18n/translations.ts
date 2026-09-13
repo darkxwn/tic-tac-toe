@@ -4,7 +4,7 @@ export type Translations = typeof translations.ru;
 export const translations = {
   ru: {
     // Header
-    menuBtn: 'В меню',
+    menuBtn: 'В\u00A0меню',
     mute: 'Выключить звук',
     unmute: 'Включить звук',
     musicMute: 'Выключить музыку',
@@ -97,7 +97,7 @@ export const translations = {
     // Exit Confirmation Modal
     confirmExitTitle: 'Выйти в меню?',
     confirmExitDesc: 'Текущая партия будет прервана. Вы уверены?',
-    confirmExitYes: 'Выйти в меню',
+    confirmExitYes: 'Выйти в\u00A0меню',
     confirmExitCancel: 'Продолжить игру',
 
     // Lobby Modal

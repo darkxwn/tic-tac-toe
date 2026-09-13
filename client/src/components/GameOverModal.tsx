@@ -111,10 +111,10 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
 
           <button
             onClick={onHome}
-            className="w-full py-3 px-4 rounded-xl font-semibold text-slate-400 hover:text-slate-200 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 transition-all flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full py-3 px-4 rounded-xl font-semibold text-slate-400 hover:text-slate-200 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 transition-all flex items-center justify-center gap-2 cursor-pointer whitespace-nowrap"
           >
-            <Home className="w-4 h-4" />
-            <span>{t.menuBtn}</span>
+            <Home className="w-4 h-4 shrink-0" />
+            <span className="whitespace-nowrap">{t.menuBtn}</span>
           </button>
         </div>
       </div>

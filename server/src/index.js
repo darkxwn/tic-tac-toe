@@ -137,7 +137,13 @@ function handleMessage(ws, data) {
       const room = rooms.get(code);
 
       if (!room) {
-        send(ws, { type: 'ERROR', message: `Комната с кодом "${code}" не найдена.` });
+        send(ws, { type: 'ERROR', message: `Комната с кодом "${code}" не найдена или была закрыта.` });
+        return;
+      }
+
+      // Запрет подключения к собственной комнате
+      if (room.players.X && (room.players.X.ws === ws || ws.roomCode === code)) {
+        send(ws, { type: 'ERROR', message: 'Вы не можете присоединиться к собственной комнате.' });
         return;
       }
 
@@ -325,6 +331,8 @@ function handleDisconnect(ws) {
   }
 
   rooms.delete(code);
+  ws.roomCode = null;
+  ws.role = null;
   console.log(`[Room ${code}] Закрыта из-за отключения игрока (${role}).`);
 }
 

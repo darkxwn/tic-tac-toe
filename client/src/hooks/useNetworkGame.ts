@@ -34,6 +34,19 @@ export function useNetworkGame() {
   const [rematchOfferedByOpponent, setRematchOfferedByOpponent] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const clearError = useCallback(() => {
+    setErrorMessage(null);
+  }, []);
+
+  // Автоматическое скрытие ошибок и предупреждений через 12 секунд (10-15 сек)
+  useEffect(() => {
+    if (!errorMessage) return;
+    const timer = setTimeout(() => {
+      setErrorMessage(null);
+    }, 12000);
+    return () => clearTimeout(timer);
+  }, [errorMessage]);
+
   const wsRef = useRef<WebSocket | null>(null);
 
   const disconnect = useCallback(() => {
@@ -201,6 +214,7 @@ export function useNetworkGame() {
     rematchRequestedByMe,
     rematchOfferedByOpponent,
     errorMessage,
+    clearError,
     createRoom,
     joinRoom,
     sendMove,

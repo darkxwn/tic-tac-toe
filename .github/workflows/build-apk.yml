@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   build-apk:
-    name: Build & Package Android APK
+    name: Build & Package Android APKs
     runs-on: ubuntu-latest
 
     steps:
@@ -58,14 +58,16 @@ jobs:
         working-directory: ./client/android
         run: chmod +x gradlew
 
-      - name: Build Debug APK
+      - name: Build Debug APKs (Universal, arm64-v8a, armeabi-v7a)
         working-directory: ./client/android
         run: ./gradlew assembleDebug --stacktrace
 
-      - name: Prepare APK for Release
+      - name: Prepare APKs for Release
         run: |
-          mkdir -p release-artifacts
-          cp client/android/app/build/outputs/apk/debug/app-debug.apk release-artifacts/tic-tac-toe-latest.apk
+          mkdir -p release-apks
+          cp client/android/app/build/outputs/apk/debug/app-universal-debug.apk release-apks/tic-tac-toe-universal.apk
+          cp client/android/app/build/outputs/apk/debug/app-arm64-v8a-debug.apk release-apks/tic-tac-toe-arm64-v8a.apk
+          cp client/android/app/build/outputs/apk/debug/app-armeabi-v7a-debug.apk release-apks/tic-tac-toe-armeabi-v7a.apk
 
       - name: Determine Release Tag
         id: release_tag
@@ -75,33 +77,20 @@ jobs:
             echo "title=Release ${{ github.ref_name }}" >> $GITHUB_OUTPUT
           else
             echo "tag=latest" >> $GITHUB_OUTPUT
-            echo "title=Tic-Tac-Toe Latest APK" >> $GITHUB_OUTPUT
+            echo "title=Latest Build" >> $GITHUB_OUTPUT
           fi
 
-      - name: Publish Direct APK to GitHub Releases
+      - name: Publish 3 APKs to GitHub Releases (No Description)
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.release_tag.outputs.tag }}
           name: ${{ steps.release_tag.outputs.title }}
-          body: |
-            ### 📱 Скачать игру для Android
-            
-            Прямой файл `.apk` без zip-архива (готов к установке):
-            👉 **[Скачать tic-tac-toe-latest.apk](https://github.com/${{ github.repository }}/releases/download/${{ steps.release_tag.outputs.tag }}/tic-tac-toe-latest.apk)**
-          files: release-artifacts/tic-tac-toe-latest.apk
+          body: ""
+          generate_release_notes: false
+          files: |
+            release-apks/tic-tac-toe-universal.apk
+            release-apks/tic-tac-toe-arm64-v8a.apk
+            release-apks/tic-tac-toe-armeabi-v7a.apk
           prerelease: false
           draft: false
           make_latest: true
-
-      - name: Add Direct Link to Job Summary
-        run: |
-          echo "## 📱 Прямое скачивание APK (без zip)" >> $GITHUB_STEP_SUMMARY
-          echo "Прямая ссылка на файл: [tic-tac-toe-latest.apk](https://github.com/${{ github.repository }}/releases/download/${{ steps.release_tag.outputs.tag }}/tic-tac-toe-latest.apk)" >> $GITHUB_STEP_SUMMARY
-
-      - name: Upload Artifact (backup)
-        uses: actions/upload-artifact@v4
-        with:
-          name: tic-tac-toe-apk
-          path: release-artifacts/tic-tac-toe-latest.apk
-          if-no-files-found: error
-          retention-days: 30
