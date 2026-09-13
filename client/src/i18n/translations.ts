@@ -7,6 +7,8 @@ export const translations = {
     menuBtn: 'В меню',
     mute: 'Выключить звук',
     unmute: 'Включить звук',
+    musicMute: 'Выключить музыку',
+    musicUnmute: 'Включить музыку',
 
     // Themes
     themeNeon: 'Неон',
@@ -26,16 +28,16 @@ export const translations = {
 
     // Modes Cards
     singleplayer: 'Одиночная игра',
-    singleplayerDesc: 'Сразитесь с локальным ботом. 3 уровня сложности: Новичок, Средний, Сложный.',
+    singleplayerDesc: 'Сразитесь с локальным ботом на одном из 3 уровней сложности.',
     chooseDifficulty: 'Выбрать сложность',
     multiplayer: 'Мультиплеер',
-    multiplayerDesc: 'Играйте вдвоем на одном устройстве (Hotseat) или по коду комнаты через интернет.',
+    multiplayerDesc: 'Играйте вдвоем на одном устройстве или онлайн по коду комнаты.',
     chooseMultiplayer: 'Выбрать вариант игры',
 
     // Rules Modal
     rulesBtn: 'Как работает исчезающий ход?',
     rulesTitle: 'Механика «Исчезающий ход»',
-    rule1Title: 'Очередь ходов (FIFO)',
+    rule1Title: 'Очередь ходов',
     rule1Desc: 'У каждого игрока на поле может быть максимум 3 активные фигуры. При постановке 4-й фигуры ваша самая старая (первая) фигура мгновенно исчезает, а клетка освобождается.',
     rule2Title: 'Визуальный возраст фигур',
     rule2Desc: 'Фигуры стареют со временем: новая горит ярко (100%), вторая бледнеет (65%), а третья становится полупрозрачной (35%) и плавно пульсирует, предупреждая об исчезновении.',
@@ -117,6 +119,8 @@ export const translations = {
     menuBtn: 'Menu',
     mute: 'Mute',
     unmute: 'Unmute',
+    musicMute: 'Mute Music',
+    musicUnmute: 'Play Music',
 
     // Themes
     themeNeon: 'Neon',
@@ -136,16 +140,16 @@ export const translations = {
 
     // Modes Cards
     singleplayer: 'Single Player',
-    singleplayerDesc: 'Play against local bot. 3 difficulty levels: Novice, Medium, Hard.',
+    singleplayerDesc: 'Play against a local bot across 3 different difficulty levels.',
     chooseDifficulty: 'Select difficulty',
     multiplayer: 'Multiplayer',
-    multiplayerDesc: 'Play 2-player on one device (Hotseat) or online via room code.',
+    multiplayerDesc: 'Play 2-player on one device or online via 4-letter room code.',
     chooseMultiplayer: 'Select mode',
 
     // Rules Modal
     rulesBtn: 'How does vanishing move work?',
     rulesTitle: 'Vanishing Move Mechanics',
-    rule1Title: 'FIFO Queue (Max 3 Marks)',
+    rule1Title: 'Queue (Max 3 Marks)',
     rule1Desc: 'Each player can have at most 3 active marks on the board. When placing a 4th mark, your oldest mark vanishes immediately, freeing that cell for anyone to claim.',
     rule2Title: 'Visual Age Indicator',
     rule2Desc: 'Marks fade over time: newest is bright (100%), previous dims (65%), and the oldest turns semi-transparent (35%) and gently pulses before vanishing.',

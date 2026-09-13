@@ -109,7 +109,7 @@ export const Menu: React.FC<MenuProps> = ({
         <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-[var(--text-primary)]">
           {t.titleCross} <span style={{ color: 'var(--color-x)' }}>{t.titleNought}</span>
         </h1>
-        <p className="text-xs text-[var(--text-secondary)] mt-1">
+        <p className="text-xs text-[var(--text-secondary)] mt-1 min-h-[16px] sm:min-h-0">
           {t.subtitle}
         </p>
       </div>
@@ -182,7 +182,7 @@ export const Menu: React.FC<MenuProps> = ({
           <button
             type="button"
             onClick={() => setView('bot_setup')}
-            className="p-4 sm:p-6 bg-[var(--bg-card)] border-2 border-[var(--border-color)] hover:border-purple-500/70 hover:shadow-purple-500/10 rounded-2xl sm:rounded-3xl flex flex-col justify-between shadow-md sm:shadow-lg transition-all group text-left cursor-pointer active:scale-[0.98]"
+            className="min-h-[175px] sm:min-h-[205px] p-4 sm:p-6 bg-[var(--bg-card)] border-2 border-[var(--border-color)] hover:border-purple-500/70 hover:shadow-purple-500/10 rounded-2xl sm:rounded-3xl flex flex-col justify-between shadow-md sm:shadow-lg transition-all group text-left cursor-pointer active:scale-[0.98]"
           >
             <div>
               <div className="w-11 h-11 sm:w-13 sm:h-13 rounded-2xl bg-purple-500/10 border border-purple-500/30 text-purple-400 flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-105 transition-transform">
@@ -191,7 +191,7 @@ export const Menu: React.FC<MenuProps> = ({
               <h2 className="font-extrabold text-base sm:text-xl text-[var(--text-primary)] mb-1">
                 {t.singleplayer}
               </h2>
-              <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+              <p className="text-xs text-[var(--text-secondary)] leading-relaxed min-h-[36px] sm:min-h-[44px]">
                 {t.singleplayerDesc}
               </p>
             </div>
@@ -205,7 +205,7 @@ export const Menu: React.FC<MenuProps> = ({
           <button
             type="button"
             onClick={() => setView('multiplayer_setup')}
-            className="p-4 sm:p-6 bg-[var(--bg-card)] border-2 border-[var(--border-color)] hover:border-cyan-500/70 hover:shadow-cyan-500/10 rounded-2xl sm:rounded-3xl flex flex-col justify-between shadow-md sm:shadow-lg transition-all group text-left cursor-pointer active:scale-[0.98]"
+            className="min-h-[175px] sm:min-h-[205px] p-4 sm:p-6 bg-[var(--bg-card)] border-2 border-[var(--border-color)] hover:border-cyan-500/70 hover:shadow-cyan-500/10 rounded-2xl sm:rounded-3xl flex flex-col justify-between shadow-md sm:shadow-lg transition-all group text-left cursor-pointer active:scale-[0.98]"
           >
             <div>
               <div className="w-11 h-11 sm:w-13 sm:h-13 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-105 transition-transform">
@@ -214,7 +214,7 @@ export const Menu: React.FC<MenuProps> = ({
               <h2 className="font-extrabold text-base sm:text-xl text-[var(--text-primary)] mb-1">
                 {t.multiplayer}
               </h2>
-              <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+              <p className="text-xs text-[var(--text-secondary)] leading-relaxed min-h-[36px] sm:min-h-[44px]">
                 {t.multiplayerDesc}
               </p>
             </div>

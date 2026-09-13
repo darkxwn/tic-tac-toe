@@ -8,13 +8,16 @@ import type {
   ClientMessage,
   ServerMessage,
 } from '../types/game';
+import { Capacitor } from '@capacitor/core';
 import { INITIAL_BOARD, INITIAL_QUEUES } from '../logic/gameLogic';
+
+const isNative = typeof window !== 'undefined' && Capacitor.isNativePlatform();
 
 const DEFAULT_WS_URL =
   import.meta.env.VITE_WS_URL ||
-  (typeof window !== 'undefined' && window.location.hostname === 'localhost'
+  (!isNative && typeof window !== 'undefined' && window.location.hostname === 'localhost'
     ? 'ws://localhost:3001'
-    : 'wss://tic-tac-toe-relay.onrender.com');
+    : 'wss://infinity-tic-tac-toe-relay.onrender.com');
 
 export function useNetworkGame() {
   const [status, setStatus] = useState<

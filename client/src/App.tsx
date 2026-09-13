@@ -18,6 +18,7 @@ import { getBotMove } from './logic/botAi';
 import { usePlayerProfile } from './hooks/usePlayerProfile';
 import { useGameStats } from './hooks/useGameStats';
 import { useSound } from './hooks/useSound';
+import { useBackgroundMusic } from './hooks/useBackgroundMusic';
 import { useLanguage } from './hooks/useLanguage';
 import { useNetworkGame } from './hooks/useNetworkGame';
 import { Board } from './components/Board';
@@ -28,14 +29,21 @@ import { ConfirmModal } from './components/ConfirmModal';
 import { Menu } from './components/Menu';
 import { ThemeSwitcher } from './components/ThemeSwitcher';
 import { LanguageSwitcher } from './components/LanguageSwitcher';
-import { ArrowLeft, Volume2, VolumeX, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Volume2, VolumeX, AlertCircle, Music } from 'lucide-react';
+import { StatusBar } from '@capacitor/status-bar';
 
 export function App() {
   const { lang, toggleLang, t } = useLanguage();
   const { playerName, savePlayerName } = usePlayerProfile();
   const { stats, recordResult, resetStats } = useGameStats();
   const { playSound } = useSound();
+  const { musicEnabled, toggleMusic } = useBackgroundMusic();
   const [soundEnabled, setSoundEnabled] = useState(true);
+
+  // Скрытие системного StatusBar для полноэкранного игрового режима
+  useEffect(() => {
+    StatusBar.hide().catch(() => {});
+  }, []);
 
   // Режим экрана
   const [gameMode, setGameMode] = useState<GameMode | null>(null);
@@ -68,7 +76,7 @@ export function App() {
   const network = useNetworkGame();
 
   const triggerSound = useCallback(
-    (type: 'move' | 'vanish' | 'win' | 'click') => {
+    (type: 'move' | 'click') => {
       if (soundEnabled) playSound(type);
     },
     [soundEnabled, playSound]
@@ -89,7 +97,6 @@ export function App() {
     (win: WinningState) => {
       setWinningState(win);
       setScores((prev) => ({ ...prev, [win.winner]: prev[win.winner] + 1 }));
-      triggerSound('win');
 
       // Учёт статистики
       if (gameMode === 'bot') {
@@ -153,13 +160,8 @@ export function App() {
     if (winningState || board[cellIndex] !== null || isBotThinking) return;
 
     // Выполняем ход
-    const { nextBoard, nextQueues, removedCell } = executeMove(board, queues, currentTurn, cellIndex);
-
-    if (removedCell !== null) {
-      triggerSound('vanish');
-    } else {
-      triggerSound('move');
-    }
+    const { nextBoard, nextQueues } = executeMove(board, queues, currentTurn, cellIndex);
+    triggerSound('move');
 
     setBoard(nextBoard);
     setQueues(nextQueues);
@@ -190,13 +192,8 @@ export function App() {
       const diff = botDiffRef.current;
 
       const botMove = getBotMove(currentB, currentQ, 'O', diff);
-      const { nextBoard, nextQueues, removedCell } = executeMove(currentB, currentQ, 'O', botMove);
-
-      if (removedCell !== null) {
-        triggerSound('vanish');
-      } else {
-        triggerSound('move');
-      }
+      const { nextBoard, nextQueues } = executeMove(currentB, currentQ, 'O', botMove);
+      triggerSound('move');
 
       setBoard(nextBoard);
       setQueues(nextQueues);
@@ -241,11 +238,9 @@ export function App() {
     }
   }, [network.status]);
 
-  // Звук, задержка окна и запись статистики при сетевой победе
+  // Задержка окна и запись статистики при сетевой победе
   useEffect(() => {
     if (network.winningState) {
-      triggerSound('win');
-
       const isMeWinner = network.winningState.winner === network.myRole;
       recordResult('online', isMeWinner);
 
@@ -330,7 +325,7 @@ export function App() {
 
   return (
     <main className="min-h-[100dvh] w-full flex flex-col justify-between py-3 px-4 sm:p-6 max-w-xl mx-auto select-none">
-      {/* Верхняя панель: Кнопка возврата, выбор темы, язык, звук */}
+      {/* Верхняя панель: Кнопка возврата, выбор темы, язык, звук, музыка */}
       <header className="flex items-center justify-between w-full mb-3 sm:mb-4 gap-2">
         {gameMode ? (
           <button
@@ -357,12 +352,30 @@ export function App() {
           {/* Переключатель языка: RU / EN */}
           <LanguageSwitcher currentLang={lang} onToggle={toggleLang} />
 
+          {/* Звуковые эффекты (ход) */}
           <button
             onClick={() => setSoundEnabled(!soundEnabled)}
-            className="p-2 sm:p-2.5 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all cursor-pointer active:scale-95"
+            className={`p-2 sm:p-2.5 rounded-2xl border transition-all cursor-pointer active:scale-95 flex items-center justify-center ${
+              soundEnabled
+                ? 'bg-cyan-500/15 border-cyan-500/40 text-cyan-400 shadow-sm shadow-cyan-500/20'
+                : 'bg-[var(--bg-surface)] border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+            }`}
             title={soundEnabled ? t.mute : t.unmute}
           >
-            {soundEnabled ? <Volume2 className="w-4 h-4 text-cyan-400" /> : <VolumeX className="w-4 h-4" />}
+            {soundEnabled ? <Volume2 className="w-4 h-4 text-cyan-400" /> : <VolumeX className="w-4 h-4 opacity-60" />}
+          </button>
+
+          {/* Переключатель фоновой музыки 🎵 */}
+          <button
+            onClick={toggleMusic}
+            className={`p-2 sm:p-2.5 rounded-2xl border transition-all cursor-pointer active:scale-95 flex items-center justify-center ${
+              musicEnabled
+                ? 'bg-cyan-500/15 border-cyan-500/40 text-cyan-400 shadow-sm shadow-cyan-500/20'
+                : 'bg-[var(--bg-surface)] border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+            }`}
+            title={musicEnabled ? t.musicMute : t.musicUnmute}
+          >
+            <Music className={`w-4 h-4 ${musicEnabled ? 'animate-pulse text-cyan-400' : 'opacity-60'}`} />
           </button>
         </div>
       </header>

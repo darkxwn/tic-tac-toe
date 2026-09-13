@@ -1,9 +1,41 @@
+import http from 'http';
 import { WebSocketServer, WebSocket } from 'ws';
 
-const PORT = process.env.PORT || 3001;
-const wss = new WebSocketServer({ port: Number(PORT) });
+// Активные комнаты: Map<roomCode, RoomData>
+const rooms = new Map();
 
-console.log(`[Relay Server] WebSocket сервер запущен на порту ${PORT}`);
+const server = http.createServer((req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+
+  if (req.method === 'OPTIONS') {
+    res.writeHead(204);
+    res.end();
+    return;
+  }
+
+  if (req.url === '/health' || req.url === '/') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(
+      JSON.stringify({
+        status: 'ok',
+        service: 'infinity-tic-tac-toe-relay',
+        roomsCount: rooms.size,
+        uptime: Math.floor(process.uptime()),
+      })
+    );
+  } else {
+    res.writeHead(404);
+    res.end();
+  }
+});
+
+const wss = new WebSocketServer({ server });
+
+const PORT = process.env.PORT || 3001;
+server.listen(Number(PORT), '0.0.0.0', () => {
+  console.log(`[Relay Server] HTTP & WebSocket сервер запущен на порту ${PORT}`);
+});
 
 // Алфавит для генерации кодов (без похожих символов: 0, O, 1, I, L)
 const CODE_CHARS = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
@@ -31,9 +63,6 @@ function checkWinner(board) {
   }
   return null;
 }
-
-// Активные комнаты: Map<roomCode, RoomData>
-const rooms = new Map();
 
 function send(ws, data) {
   if (ws && ws.readyState === WebSocket.OPEN) {
