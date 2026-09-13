@@ -206,11 +206,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           <button
             type="button"
             onClick={onToggleDynamicBg}
-            className={`flex items-center justify-between p-2.5 sm:p-3 bg-[var(--bg-surface)] border rounded-2xl transition-all cursor-pointer active:scale-[0.99] ${
-              dynamicBgEnabled
-                ? 'border-cyan-500/40 shadow-sm shadow-cyan-500/10'
-                : 'border-[var(--border-color)]'
-            }`}
+            className="flex items-center justify-between p-2.5 sm:p-3 bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-2xl transition-all cursor-pointer active:scale-[0.99]"
           >
             <div className="flex items-center gap-2.5">
               <div
