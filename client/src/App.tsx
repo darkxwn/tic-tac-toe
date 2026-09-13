@@ -630,10 +630,18 @@ export function App() {
           winner={activeWinning.winner}
           winnerName={activeWinning.winnerName}
           isOnline={isOnlinePlaying}
+          isVictory={
+            gameMode === 'online'
+              ? network.myRole === activeWinning.winner
+              : gameMode === 'bot'
+              ? activeWinning.winner === 'X'
+              : true
+          }
           rematchRequestedByMe={network.rematchRequestedByMe}
           rematchOfferedByOpponent={network.rematchOfferedByOpponent}
           t={{
             victory: t.victory,
+            defeat: t.defeat,
             wonLinedUp: t.wonLinedUp,
             opponentOfferedRematch: t.opponentOfferedRematch,
             waitingOpponentRematch: t.waitingOpponentRematch,

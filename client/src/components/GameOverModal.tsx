@@ -1,16 +1,18 @@
 import React, { useEffect } from 'react';
 import confetti from 'canvas-confetti';
-import { Trophy, RotateCcw, Home, Loader2, Check } from 'lucide-react';
+import { Trophy, RotateCcw, Home, Loader2, Check, Frown } from 'lucide-react';
 import type { Player } from '../types/game';
 
 interface GameOverModalProps {
   winner: Player;
   winnerName: string;
   isOnline: boolean;
+  isVictory?: boolean;
   rematchRequestedByMe: boolean;
   rematchOfferedByOpponent: boolean;
   t: {
     victory: string;
+    defeat: string;
     wonLinedUp: string;
     opponentOfferedRematch: string;
     waitingOpponentRematch: string;
@@ -27,6 +29,7 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
   winner,
   winnerName,
   isOnline,
+  isVictory = true,
   rematchRequestedByMe,
   rematchOfferedByOpponent,
   t,
@@ -34,6 +37,7 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
   onHome,
 }) => {
   useEffect(() => {
+    if (!isVictory) return;
     try {
       confetti({
         particleCount: 80,
@@ -44,23 +48,29 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
     } catch {
       // Игнорируем
     }
-  }, [winner]);
+  }, [winner, isVictory]);
 
   const isX = winner === 'X';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-pop">
       <div className="w-full max-w-sm p-6 bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl text-center">
-        <div
-          className={`w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center ${
-            isX ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/40' : 'bg-rose-500/20 text-rose-400 border border-rose-500/40'
-          }`}
-        >
-          <Trophy className="w-9 h-9 animate-bounce" />
-        </div>
+        {isVictory ? (
+          <div
+            className={`w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center ${
+              isX ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/40' : 'bg-rose-500/20 text-rose-400 border border-rose-500/40'
+            }`}
+          >
+            <Trophy className="w-9 h-9 animate-bounce" />
+          </div>
+        ) : (
+          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center bg-rose-950/40 text-rose-400 border border-rose-500/30">
+            <Frown className="w-9 h-9" />
+          </div>
+        )}
 
         <h2 className="text-2xl font-black text-slate-100 tracking-tight mb-1">
-          {t.victory}
+          {isVictory ? t.victory : t.defeat}
         </h2>
         <p className="text-slate-400 text-sm mb-6">
           <span className={`font-bold ${isX ? 'text-cyan-400' : 'text-rose-400'}`}>
