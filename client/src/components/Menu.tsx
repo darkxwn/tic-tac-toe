@@ -92,7 +92,7 @@ export const Menu: React.FC<MenuProps> = ({
   // Экран статистики
   if (view === 'stats') {
     return (
-      <div className="w-full max-w-sm sm:max-w-md mx-auto">
+      <div className="w-full max-w-sm sm:max-w-xl mx-auto">
         <StatsView stats={stats} t={t} onBack={() => setView('main')} onReset={onResetStats} />
       </div>
     );
@@ -109,9 +109,6 @@ export const Menu: React.FC<MenuProps> = ({
         <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-[var(--text-primary)]">
           {t.titleCross} <span style={{ color: 'var(--color-x)' }}>{t.titleNought}</span>
         </h1>
-        <p className="text-xs text-[var(--text-secondary)] mt-1 min-h-[16px] sm:min-h-0">
-          {t.subtitle}
-        </p>
       </div>
 
       {/* Верхний блок: Поле ввода ника и кнопка статистики */}
@@ -168,30 +165,30 @@ export const Menu: React.FC<MenuProps> = ({
           type="button"
           onClick={() => setView('stats')}
           title={t.statsBtn}
-          className="self-stretch px-3.5 sm:px-4 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-amber-500/50 text-[var(--text-secondary)] hover:text-amber-400 flex flex-col items-center justify-center gap-1 transition-all cursor-pointer shadow-sm active:scale-95 group"
+          className="self-stretch w-[84px] sm:w-[96px] shrink-0 px-1 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-amber-500/50 text-[var(--text-secondary)] hover:text-amber-400 flex flex-col items-center justify-center gap-1 transition-all cursor-pointer shadow-sm active:scale-95 group"
         >
           <BarChart3 className="w-5 h-5 group-hover:scale-110 transition-transform text-amber-400" />
-          <span className="text-[10px] font-bold tracking-tight">{t.statsBtn}</span>
+          <span className="text-[10px] sm:text-[11px] font-bold tracking-tight truncate max-w-full text-center">{t.statsBtn}</span>
         </button>
       </div>
 
       {/* 1. ГЛАВНЫЙ ЭКРАН: 2 карточки */}
       {view === 'main' && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4 w-full animate-pop">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4 w-full animate-pop items-stretch">
           {/* КАРТОЧКА 1: Одиночная игра */}
           <button
             type="button"
             onClick={() => setView('bot_setup')}
-            className="min-h-[175px] sm:min-h-[205px] p-4 sm:p-6 bg-[var(--bg-card)] border-2 border-[var(--border-color)] hover:border-purple-500/70 hover:shadow-purple-500/10 rounded-2xl sm:rounded-3xl flex flex-col justify-between shadow-md sm:shadow-lg transition-all group text-left cursor-pointer active:scale-[0.98]"
+            className="min-h-[195px] sm:min-h-[225px] h-full p-4 sm:p-6 bg-[var(--bg-card)] border-2 border-[var(--border-color)] hover:border-purple-500/70 hover:shadow-purple-500/10 rounded-2xl sm:rounded-3xl flex flex-col justify-between shadow-md sm:shadow-lg transition-all group text-left cursor-pointer active:scale-[0.98]"
           >
             <div>
-              <div className="w-11 h-11 sm:w-13 sm:h-13 rounded-2xl bg-purple-500/10 border border-purple-500/30 text-purple-400 flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-105 transition-transform">
+              <div className="w-11 h-11 sm:w-13 sm:h-13 rounded-2xl bg-purple-500/10 border border-purple-500/30 text-purple-400 flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-105 transition-transform shrink-0">
                 <Bot className="w-6 h-6 sm:w-7 sm:h-7" />
               </div>
-              <h2 className="font-extrabold text-base sm:text-xl text-[var(--text-primary)] mb-1">
+              <h2 className="font-extrabold text-base sm:text-xl text-[var(--text-primary)] mb-1 min-h-[24px] sm:min-h-[28px] flex items-center">
                 {t.singleplayer}
               </h2>
-              <p className="text-xs text-[var(--text-secondary)] leading-relaxed min-h-[36px] sm:min-h-[44px]">
+              <p className="text-xs text-[var(--text-secondary)] leading-relaxed min-h-[38px] sm:min-h-[44px]">
                 {t.singleplayerDesc}
               </p>
             </div>
@@ -205,16 +202,16 @@ export const Menu: React.FC<MenuProps> = ({
           <button
             type="button"
             onClick={() => setView('multiplayer_setup')}
-            className="min-h-[175px] sm:min-h-[205px] p-4 sm:p-6 bg-[var(--bg-card)] border-2 border-[var(--border-color)] hover:border-cyan-500/70 hover:shadow-cyan-500/10 rounded-2xl sm:rounded-3xl flex flex-col justify-between shadow-md sm:shadow-lg transition-all group text-left cursor-pointer active:scale-[0.98]"
+            className="min-h-[195px] sm:min-h-[225px] h-full p-4 sm:p-6 bg-[var(--bg-card)] border-2 border-[var(--border-color)] hover:border-cyan-500/70 hover:shadow-cyan-500/10 rounded-2xl sm:rounded-3xl flex flex-col justify-between shadow-md sm:shadow-lg transition-all group text-left cursor-pointer active:scale-[0.98]"
           >
             <div>
-              <div className="w-11 h-11 sm:w-13 sm:h-13 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-105 transition-transform">
+              <div className="w-11 h-11 sm:w-13 sm:h-13 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-105 transition-transform shrink-0">
                 <Users className="w-6 h-6 sm:w-7 sm:h-7" />
               </div>
-              <h2 className="font-extrabold text-base sm:text-xl text-[var(--text-primary)] mb-1">
+              <h2 className="font-extrabold text-base sm:text-xl text-[var(--text-primary)] mb-1 min-h-[24px] sm:min-h-[28px] flex items-center">
                 {t.multiplayer}
               </h2>
-              <p className="text-xs text-[var(--text-secondary)] leading-relaxed min-h-[36px] sm:min-h-[44px]">
+              <p className="text-xs text-[var(--text-secondary)] leading-relaxed min-h-[38px] sm:min-h-[44px]">
                 {t.multiplayerDesc}
               </p>
             </div>
@@ -283,7 +280,7 @@ export const Menu: React.FC<MenuProps> = ({
                   key={d.id}
                   type="button"
                   onClick={() => setSelectedDifficulty(d.id as BotDifficulty)}
-                  className={`p-3 rounded-2xl border text-left transition-all cursor-pointer flex items-center justify-between ${
+                  className={`p-3 rounded-2xl border text-left transition-all cursor-pointer flex items-center justify-between min-h-[66px] sm:min-h-[70px] ${
                     isSelected
                       ? `${d.activeColor} ring-1 ring-current shadow-sm`
                       : `bg-[var(--bg-surface)] border-[var(--border-color)] text-[var(--text-secondary)] ${d.color}`
@@ -294,10 +291,10 @@ export const Menu: React.FC<MenuProps> = ({
                       {d.icon}
                     </div>
                     <div>
-                      <div className="font-bold text-sm text-[var(--text-primary)] mb-0.5">
+                      <div className="font-bold text-sm text-[var(--text-primary)] mb-0.5 min-h-[20px] flex items-center">
                         {d.title}
                       </div>
-                      <div className="text-[11px] opacity-80 leading-snug">{d.desc}</div>
+                      <div className="text-[11px] opacity-80 leading-snug min-h-[16px] sm:min-h-[18px]">{d.desc}</div>
                     </div>
                   </div>
                   <div
@@ -339,31 +336,31 @@ export const Menu: React.FC<MenuProps> = ({
             </div>
           </div>
 
-          {/* Переключатель вкладок */}
-          <div className="grid grid-cols-2 gap-1 p-1 bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-color)] mb-4">
+          {/* Переключатель вкладок с фиксированной высотой */}
+          <div className="grid grid-cols-2 gap-1 p-1 bg-[var(--bg-surface)] rounded-2xl border border-[var(--border-color)] mb-4 h-11 sm:h-12 items-center">
             <button
               type="button"
               onClick={() => setMultiplayerTab('hotseat')}
-              className={`py-2 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+              className={`h-full text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer px-2 text-center leading-tight ${
                 multiplayerTab === 'hotseat'
                   ? 'bg-cyan-600 text-white shadow'
                   : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
               }`}
             >
-              <Smartphone className="w-3.5 h-3.5" />
-              <span>{t.onOneDevice}</span>
+              <Smartphone className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate">{t.onOneDevice}</span>
             </button>
             <button
               type="button"
               onClick={() => setMultiplayerTab('online')}
-              className={`py-2 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+              className={`h-full text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer px-2 text-center leading-tight ${
                 multiplayerTab === 'online'
                   ? 'bg-indigo-600 text-white shadow'
                   : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
               }`}
             >
-              <Globe className="w-3.5 h-3.5" />
-              <span>{t.online}</span>
+              <Globe className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate">{t.online}</span>
             </button>
           </div>
 

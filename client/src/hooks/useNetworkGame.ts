@@ -17,7 +17,7 @@ const DEFAULT_WS_URL =
   import.meta.env.VITE_WS_URL ||
   (!isNative && typeof window !== 'undefined' && window.location.hostname === 'localhost'
     ? 'ws://localhost:3001'
-    : 'wss://infinity-tic-tac-toe-relay.onrender.com');
+    : 'wss://tic-tac-toe-relay.fly.dev');
 
 export function useNetworkGame() {
   const [status, setStatus] = useState<

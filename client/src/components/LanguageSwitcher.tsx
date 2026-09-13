@@ -13,10 +13,10 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ currentLang,
       type="button"
       onClick={onToggle}
       title={currentLang === 'ru' ? 'Switch to English' : 'Переключить на русский'}
-      className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 shadow-sm"
+      className="h-9 sm:h-10 w-[68px] sm:w-[74px] shrink-0 px-2 sm:px-3 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-xs font-black transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-95 shadow-sm"
     >
-      <Globe className="w-3.5 h-3.5 text-cyan-400" />
-      <span className="uppercase text-[11px] tracking-wider">{currentLang}</span>
+      <Globe className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+      <span className="uppercase text-[11px] tracking-wider font-bold">{currentLang}</span>
     </button>
   );
 };

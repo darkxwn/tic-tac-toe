@@ -29,16 +29,19 @@ import { ConfirmModal } from './components/ConfirmModal';
 import { Menu } from './components/Menu';
 import { ThemeSwitcher } from './components/ThemeSwitcher';
 import { LanguageSwitcher } from './components/LanguageSwitcher';
-import { ArrowLeft, Volume2, VolumeX, AlertCircle, Music } from 'lucide-react';
+import { SettingsModal } from './components/SettingsModal';
+import { ArrowLeft, Volume2, VolumeX, AlertCircle, Music, Settings } from 'lucide-react';
 import { StatusBar } from '@capacitor/status-bar';
+import { Capacitor } from '@capacitor/core';
 
 export function App() {
   const { lang, toggleLang, t } = useLanguage();
   const { playerName, savePlayerName } = usePlayerProfile();
   const { stats, recordResult, resetStats } = useGameStats();
-  const { playSound } = useSound();
-  const { musicEnabled, toggleMusic } = useBackgroundMusic();
-  const [soundEnabled, setSoundEnabled] = useState(true);
+  const { soundEnabled, soundVolume, setSoundVolume, toggleSound, playSound } = useSound();
+  const { musicEnabled, musicVolume, setMusicVolume, toggleMusic } = useBackgroundMusic();
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const isNative = Capacitor.isNativePlatform();
 
   // Скрытие системного StatusBar для полноэкранного игрового режима
   useEffect(() => {
@@ -77,9 +80,9 @@ export function App() {
 
   const triggerSound = useCallback(
     (type: 'move' | 'click') => {
-      if (soundEnabled) playSound(type);
+      playSound(type);
     },
-    [soundEnabled, playSound]
+    [playSound]
   );
 
   // Сброс локальной игры
@@ -324,13 +327,13 @@ export function App() {
   const activeWinning = isOnlinePlaying ? network.winningState : winningState;
 
   return (
-    <main className="min-h-[100dvh] w-full flex flex-col justify-between py-3 px-4 sm:p-6 max-w-xl mx-auto select-none">
-      {/* Верхняя панель: Кнопка возврата, выбор темы, язык, звук, музыка */}
+    <main className="min-h-[100dvh] w-full flex flex-col justify-between pt-8 pb-3 px-4 sm:p-6 max-w-xl mx-auto select-none">
+      {/* Верхняя панель: Кнопка возврата, выбор темы, язык, звук, музыка или кнопка настроек */}
       <header className="flex items-center justify-between w-full mb-3 sm:mb-4 gap-2">
         {gameMode ? (
           <button
             onClick={handleRequestGoHome}
-            className="py-2 px-3 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all flex items-center gap-1.5 text-xs font-bold cursor-pointer active:scale-95"
+            className="h-9 sm:h-10 px-3 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all flex items-center gap-1.5 text-xs font-bold cursor-pointer active:scale-95"
           >
             <ArrowLeft className="w-4 h-4" />
             <span className="hidden sm:inline">{t.menuBtn}</span>
@@ -339,45 +342,132 @@ export function App() {
           <div />
         )}
 
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          {/* Переключатель тем: Неон, Тёмная, Светлая */}
-          <ThemeSwitcher
-            labels={{
-              neon: t.themeNeon,
-              dark: t.themeDark,
-              light: t.themeLight,
-            }}
-          />
-
-          {/* Переключатель языка: RU / EN */}
-          <LanguageSwitcher currentLang={lang} onToggle={toggleLang} />
-
-          {/* Звуковые эффекты (ход) */}
+        {/* На Android приложении: только кнопка настроек */}
+        {isNative ? (
           <button
-            onClick={() => setSoundEnabled(!soundEnabled)}
-            className={`p-2 sm:p-2.5 rounded-2xl border transition-all cursor-pointer active:scale-95 flex items-center justify-center ${
-              soundEnabled
-                ? 'bg-cyan-500/15 border-cyan-500/40 text-cyan-400 shadow-sm shadow-cyan-500/20'
-                : 'bg-[var(--bg-surface)] border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-            }`}
-            title={soundEnabled ? t.mute : t.unmute}
+            type="button"
+            onClick={() => setShowSettingsModal(true)}
+            className="h-9 w-9 sm:h-10 sm:w-10 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-cyan-500/40 transition-all flex items-center justify-center cursor-pointer active:scale-95 shadow-sm"
+            title={t.settingsBtn}
           >
-            {soundEnabled ? <Volume2 className="w-4 h-4 text-cyan-400" /> : <VolumeX className="w-4 h-4 opacity-60" />}
+            <Settings className="w-4 h-4 text-cyan-400" />
           </button>
+        ) : (
+          <>
+            {/* Для мобильного веб-экрана (< sm): кнопка настроек */}
+            <div className="flex sm:hidden items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => setShowSettingsModal(true)}
+                className="h-9 w-9 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-cyan-500/40 transition-all flex items-center justify-center cursor-pointer active:scale-95 shadow-sm"
+                title={t.settingsBtn}
+              >
+                <Settings className="w-4 h-4 text-cyan-400" />
+              </button>
+            </div>
 
-          {/* Переключатель фоновой музыки 🎵 */}
-          <button
-            onClick={toggleMusic}
-            className={`p-2 sm:p-2.5 rounded-2xl border transition-all cursor-pointer active:scale-95 flex items-center justify-center ${
-              musicEnabled
-                ? 'bg-cyan-500/15 border-cyan-500/40 text-cyan-400 shadow-sm shadow-cyan-500/20'
-                : 'bg-[var(--bg-surface)] border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-            }`}
-            title={musicEnabled ? t.musicMute : t.musicUnmute}
-          >
-            <Music className={`w-4 h-4 ${musicEnabled ? 'animate-pulse text-cyan-400' : 'opacity-60'}`} />
-          </button>
-        </div>
+            {/* Для десктопного веб-экрана (sm+): Темы, Язык, Звук и Музыка с вертикальными слайдерами при наведении */}
+            <div className="hidden sm:flex items-center gap-2">
+              {/* Переключатель тем: Неон, Тёмная, Светлая */}
+              <ThemeSwitcher
+                labels={{
+                  neon: t.themeNeon,
+                  dark: t.themeDark,
+                  light: t.themeLight,
+                }}
+              />
+
+              {/* Переключатель языка: RU / EN */}
+              <LanguageSwitcher currentLang={lang} onToggle={toggleLang} />
+
+              {/* Звуковые эффекты с вертикальным слайдером при наведении */}
+              <div className="relative group">
+                <button
+                  type="button"
+                  onClick={toggleSound}
+                  className={`h-9 w-9 sm:h-10 sm:w-10 rounded-2xl border transition-all cursor-pointer active:scale-95 flex items-center justify-center ${
+                    soundEnabled && soundVolume > 0
+                      ? 'bg-cyan-500/15 border-cyan-500/40 text-cyan-400 shadow-sm shadow-cyan-500/20'
+                      : 'bg-[var(--bg-surface)] border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                  }`}
+                  title={soundEnabled ? t.mute : t.unmute}
+                >
+                  {soundEnabled && soundVolume > 0 ? (
+                    <Volume2 className="w-4 h-4 text-cyan-400" />
+                  ) : (
+                    <VolumeX className="w-4 h-4 opacity-60" />
+                  )}
+                </button>
+
+                {/* Выпадающий вертикальный регулятор звука при наведении */}
+                <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 hidden group-hover:flex flex-col items-center z-40">
+                  <div className="p-3 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl shadow-2xl flex flex-col items-center gap-2 backdrop-blur-md min-w-[48px]">
+                    <span className="text-[10px] font-mono font-bold text-[var(--text-primary)]">
+                      {soundEnabled ? `${Math.round(soundVolume * 100)}%` : '0%'}
+                    </span>
+                    <div className="h-28 flex items-center justify-center">
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.05"
+                        value={soundEnabled ? soundVolume : 0}
+                        onChange={(e) => setSoundVolume(parseFloat(e.target.value))}
+                        className="w-1.5 h-24 accent-cyan-400 cursor-pointer"
+                        style={{ writingMode: 'vertical-lr', direction: 'rtl' }}
+                        aria-label="Sound volume"
+                      />
+                    </div>
+                    <Volume2 className="w-3.5 h-3.5 text-cyan-400 opacity-75" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Фоновая музыка с вертикальным слайдером при наведении */}
+              <div className="relative group">
+                <button
+                  type="button"
+                  onClick={toggleMusic}
+                  className={`h-9 w-9 sm:h-10 sm:w-10 rounded-2xl border transition-all cursor-pointer active:scale-95 flex items-center justify-center ${
+                    musicEnabled && musicVolume > 0
+                      ? 'bg-cyan-500/15 border-cyan-500/40 text-cyan-400 shadow-sm shadow-cyan-500/20'
+                      : 'bg-[var(--bg-surface)] border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                  }`}
+                  title={musicEnabled ? t.musicMute : t.musicUnmute}
+                >
+                  <Music
+                    className={`w-4 h-4 ${
+                      musicEnabled && musicVolume > 0 ? 'animate-pulse text-cyan-400' : 'opacity-60'
+                    }`}
+                  />
+                </button>
+
+                {/* Выпадающий вертикальный регулятор музыки при наведении */}
+                <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 hidden group-hover:flex flex-col items-center z-40">
+                  <div className="p-3 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl shadow-2xl flex flex-col items-center gap-2 backdrop-blur-md min-w-[48px]">
+                    <span className="text-[10px] font-mono font-bold text-[var(--text-primary)]">
+                      {musicEnabled ? `${Math.round(musicVolume * 100)}%` : '0%'}
+                    </span>
+                    <div className="h-28 flex items-center justify-center">
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.05"
+                        value={musicEnabled ? musicVolume : 0}
+                        onChange={(e) => setMusicVolume(parseFloat(e.target.value))}
+                        className="w-1.5 h-24 accent-cyan-400 cursor-pointer"
+                        style={{ writingMode: 'vertical-lr', direction: 'rtl' }}
+                        aria-label="Music volume"
+                      />
+                    </div>
+                    <Music className="w-3.5 h-3.5 text-cyan-400 opacity-75" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
       </header>
 
       {/* Ошибки в онлайне */}
@@ -521,6 +611,23 @@ export function App() {
           onCancel={() => setShowExitConfirm(false)}
         />
       )}
+
+      {/* Модальное окно настроек (темы, язык, звук, музыка) */}
+      <SettingsModal
+        isOpen={showSettingsModal}
+        onClose={() => setShowSettingsModal(false)}
+        t={t}
+        lang={lang}
+        onToggleLang={toggleLang}
+        soundEnabled={soundEnabled}
+        soundVolume={soundVolume}
+        onToggleSound={toggleSound}
+        onSetSoundVolume={setSoundVolume}
+        musicEnabled={musicEnabled}
+        musicVolume={musicVolume}
+        onToggleMusic={toggleMusic}
+        onSetMusicVolume={setMusicVolume}
+      />
     </main>
   );
 }

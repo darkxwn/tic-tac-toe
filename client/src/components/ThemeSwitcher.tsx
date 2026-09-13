@@ -9,9 +9,10 @@ interface ThemeSwitcherProps {
     dark: string;
     light: string;
   };
+  alwaysShowLabels?: boolean;
 }
 
-export const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({ labels }) => {
+export const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({ labels, alwaysShowLabels = false }) => {
   const { theme, setTheme } = useTheme();
 
   const themes: { id: ThemeType; label: string; icon: React.ReactNode }[] = [
@@ -33,7 +34,11 @@ export const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({ labels }) => {
   ];
 
   return (
-    <div className="grid grid-cols-3 gap-1 p-1 bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-2xl shadow-sm">
+    <div
+      className={`h-9 sm:h-10 grid grid-cols-3 gap-1 p-1 bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-2xl shadow-sm items-center ${
+        alwaysShowLabels ? 'w-full' : 'w-full sm:w-[276px] shrink-0'
+      }`}
+    >
       {themes.map((t) => {
         const isActive = theme === t.id;
         return (
@@ -42,14 +47,14 @@ export const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({ labels }) => {
             type="button"
             onClick={() => setTheme(t.id)}
             title={t.label}
-            className={`min-w-[36px] sm:min-w-[84px] px-2 sm:px-3 py-1.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+            className={`h-full min-w-0 px-2 sm:px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
               isActive
                 ? 'bg-slate-800 text-white shadow-sm ring-1 ring-slate-700'
                 : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
             }`}
           >
             {t.icon}
-            <span className="hidden sm:inline">{t.label}</span>
+            <span className={alwaysShowLabels ? 'inline' : 'hidden sm:inline'}>{t.label}</span>
           </button>
         );
       })}

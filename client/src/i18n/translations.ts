@@ -10,6 +10,15 @@ export const translations = {
     musicMute: 'Выключить музыку',
     musicUnmute: 'Включить музыку',
 
+    // Settings Modal
+    settingsTitle: 'Настройки',
+    settingsBtn: 'Настройки',
+    themeLabel: 'Тема оформления',
+    languageLabel: 'Язык интерфейса',
+    soundEffects: 'Звуковые эффекты',
+    relaxingMusic: 'Фоновая музыка',
+    close: 'Закрыть',
+
     // Themes
     themeNeon: 'Неон',
     themeDark: 'Тёмная',
@@ -31,7 +40,7 @@ export const translations = {
     singleplayerDesc: 'Сразитесь с локальным ботом на одном из 3 уровней сложности.',
     chooseDifficulty: 'Выбрать сложность',
     multiplayer: 'Мультиплеер',
-    multiplayerDesc: 'Играйте вдвоем на одном устройстве или онлайн по коду комнаты.',
+    multiplayerDesc: 'Играйте вдвоем на одном устройстве или онлайн по коду.',
     chooseMultiplayer: 'Выбрать вариант игры',
 
     // Rules Modal
@@ -121,6 +130,15 @@ export const translations = {
     unmute: 'Unmute',
     musicMute: 'Mute Music',
     musicUnmute: 'Play Music',
+
+    // Settings Modal
+    settingsTitle: 'Settings',
+    settingsBtn: 'Settings',
+    themeLabel: 'Theme',
+    languageLabel: 'Language',
+    soundEffects: 'Sound Effects',
+    relaxingMusic: 'Background Music',
+    close: 'Close',
 
     // Themes
     themeNeon: 'Neon',

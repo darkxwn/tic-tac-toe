@@ -1,138 +1,148 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
+
+const SOUND_ENABLED_KEY = 'infinity_sound_enabled';
+const SOUND_VOLUME_KEY = 'infinity_sound_volume';
 
 type SoundType = 'move' | 'click';
 
 export function useSound() {
-  const audioCtxRef = useRef<AudioContext | null>(null);
-  const audioBuffersRef = useRef<Record<string, AudioBuffer>>({});
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem(SOUND_ENABLED_KEY);
+      return saved !== null ? saved === 'true' : true;
+    } catch {
+      return true;
+    }
+  });
 
-  // Инициализация AudioContext и предзагрузка WAV-файлов для мгновенного воспроизведения (0ms задержки)
+  const [soundVolume, setSoundVolumeState] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem(SOUND_VOLUME_KEY);
+      return saved !== null ? Math.max(0, Math.min(1, parseFloat(saved))) : 0.5;
+    } catch {
+      return 0.5;
+    }
+  });
+
+  const movePoolRef = useRef<HTMLAudioElement[]>([]);
+  const clickPoolRef = useRef<HTMLAudioElement[]>([]);
+  const poolIndexRef = useRef<{ move: number; click: number }>({ move: 0, click: 0 });
+  const soundVolumeRef = useRef(soundVolume);
+  soundVolumeRef.current = soundVolume;
+  const soundEnabledRef = useRef(soundEnabled);
+  soundEnabledRef.current = soundEnabled;
+
   useEffect(() => {
-    let isCancelled = false;
+    // Пул аудио-элементов для мгновенного воспроизведения без прерываний и задержек
+    const POOL_SIZE = 4;
+    const vol = soundVolumeRef.current;
 
-    const initAudio = async () => {
-      try {
-        const AudioContextClass =
-          window.AudioContext ||
-          (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-        if (!AudioContextClass) return;
+    movePoolRef.current = Array.from({ length: POOL_SIZE }, () => {
+      const a = new Audio('/sounds/move.wav');
+      a.preload = 'auto';
+      a.volume = Math.min(1, vol * 0.7);
+      return a;
+    });
 
-        if (!audioCtxRef.current) {
-          audioCtxRef.current = new AudioContextClass();
-        }
-        const ctx = audioCtxRef.current;
-
-        const sounds = ['move', 'click'] as const;
-        for (const name of sounds) {
-          if (isCancelled) break;
-          try {
-            const res = await fetch(`/sounds/${name}.wav`);
-            if (res.ok) {
-              const arrayBuffer = await res.arrayBuffer();
-              const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
-              if (!isCancelled) {
-                audioBuffersRef.current[name] = audioBuffer;
-              }
-            }
-          } catch {
-            // Файл будет воспроизведен через fallback
-          }
-        }
-      } catch {
-        // Игнорируем ограничения автоплея
-      }
-    };
-
-    initAudio();
-
-    // Разблокировка AudioContext при первом жесте на мобильных устройствах
-    const unlockAudio = () => {
-      if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
-        audioCtxRef.current.resume().catch(() => {});
-      }
-    };
-    window.addEventListener('pointerdown', unlockAudio, { once: true });
-    window.addEventListener('touchstart', unlockAudio, { once: true });
+    clickPoolRef.current = Array.from({ length: POOL_SIZE }, () => {
+      const a = new Audio('/sounds/click.wav');
+      a.preload = 'auto';
+      a.volume = Math.min(1, vol * 0.4);
+      return a;
+    });
 
     return () => {
-      isCancelled = true;
-      window.removeEventListener('pointerdown', unlockAudio);
-      window.removeEventListener('touchstart', unlockAudio);
-      if (audioCtxRef.current && audioCtxRef.current.state !== 'closed') {
-        audioCtxRef.current.close().catch(() => {});
-      }
+      movePoolRef.current.forEach((a) => a.pause());
+      clickPoolRef.current.forEach((a) => a.pause());
+      movePoolRef.current = [];
+      clickPoolRef.current = [];
     };
   }, []);
 
-  const playSound = useCallback((type: SoundType) => {
+  const setSoundVolume = useCallback((newVol: number) => {
+    const clamped = Math.max(0, Math.min(1, newVol));
+    setSoundVolumeState(clamped);
+    soundVolumeRef.current = clamped;
+
+    if (clamped > 0 && !soundEnabledRef.current) {
+      setSoundEnabled(true);
+      soundEnabledRef.current = true;
+      try {
+        localStorage.setItem(SOUND_ENABLED_KEY, 'true');
+      } catch {
+        // ignore
+      }
+    }
+
     try {
-      const AudioContextClass =
-        window.AudioContext ||
-        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      if (!AudioContextClass) return;
+      localStorage.setItem(SOUND_VOLUME_KEY, String(clamped));
+    } catch {
+      // ignore
+    }
 
-      if (!audioCtxRef.current) {
-        audioCtxRef.current = new AudioContextClass();
+    movePoolRef.current.forEach((a) => {
+      a.volume = Math.min(1, clamped * 0.7);
+    });
+    clickPoolRef.current.forEach((a) => {
+      a.volume = Math.min(1, clamped * 0.4);
+    });
+  }, []);
+
+  const toggleSound = useCallback(() => {
+    setSoundEnabled((prev) => {
+      const next = !prev;
+      soundEnabledRef.current = next;
+      try {
+        localStorage.setItem(SOUND_ENABLED_KEY, String(next));
+      } catch {
+        // ignore
       }
-      const ctx = audioCtxRef.current;
+      if (next && soundVolumeRef.current === 0) {
+        setSoundVolume(0.5);
+      }
+      return next;
+    });
+  }, [setSoundVolume]);
 
-      // Возобновление контекста при вызове (требование браузеров)
-      if (ctx.state === 'suspended') {
-        ctx.resume().catch(() => {});
+  const playSound = useCallback((type: SoundType) => {
+    if (!soundEnabledRef.current || soundVolumeRef.current <= 0) return;
+
+    try {
+      const pool = type === 'move' ? movePoolRef.current : clickPoolRef.current;
+      if (pool.length > 0) {
+        const idx = poolIndexRef.current[type] % pool.length;
+        poolIndexRef.current[type] = idx + 1;
+        const audio = pool[idx];
+
+        audio.currentTime = 0;
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => {
+            const unlock = () => {
+              audio.play().catch(() => {});
+              window.removeEventListener('pointerdown', unlock);
+              window.removeEventListener('touchstart', unlock);
+            };
+            window.addEventListener('pointerdown', unlock, { once: true });
+            window.addEventListener('touchstart', unlock, { once: true });
+          });
+        }
       }
 
-      const buffer = audioBuffersRef.current[type];
-      if (buffer) {
-        // Воспроизведение предзагруженного WAV-сэмпла
-        const source = ctx.createBufferSource();
-        const gainNode = ctx.createGain();
-        source.buffer = buffer;
-
-        // Высокая громкость для четкой слышимости поверх музыки
-        gainNode.gain.value = type === 'move' ? 1.15 : 0.45;
-        source.connect(gainNode);
-        gainNode.connect(ctx.destination);
-        source.start(0);
-      } else {
-        // Fallback: процедурный синтез звука на лету
-        playSynthesizedFallback(ctx, type);
-      }
-
-      // Тактильный виброотклик для смартфонов (только при установке фигуры)
+      // Тактильный виброотклик для смартфонов при установке фигуры
       if ('vibrate' in navigator && type === 'move') {
         navigator.vibrate(25);
       }
     } catch {
-      // Игнорируем ошибки автовоспроизведения
+      // Игнорируем ошибки воспроизведения
     }
   }, []);
 
-  return { playSound };
-}
-
-function playSynthesizedFallback(ctx: AudioContext, type: 'move' | 'click') {
-  if (type === 'move') {
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(780, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(240, ctx.currentTime + 0.11);
-    gain.gain.setValueAtTime(0.85, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.11);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start();
-    osc.stop(ctx.currentTime + 0.11);
-  } else if (type === 'click') {
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(800, ctx.currentTime);
-    gain.gain.setValueAtTime(0.2, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.04);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start();
-    osc.stop(ctx.currentTime + 0.04);
-  }
+  return {
+    soundEnabled,
+    soundVolume,
+    setSoundVolume,
+    toggleSound,
+    playSound,
+  };
 }

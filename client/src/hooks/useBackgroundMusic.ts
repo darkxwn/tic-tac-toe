@@ -1,26 +1,39 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
 const STORAGE_KEY = 'infinity_music_enabled';
+const VOLUME_KEY = 'infinity_music_volume';
 
 export function useBackgroundMusic() {
   const [musicEnabled, setMusicEnabled] = useState<boolean>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      // По умолчанию включено, если не отключено пользователем
       return saved !== null ? saved === 'true' : true;
     } catch {
       return true;
     }
   });
 
+  const [musicVolume, setMusicVolumeState] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem(VOLUME_KEY);
+      return saved !== null ? Math.max(0, Math.min(1, parseFloat(saved))) : 0.35;
+    } catch {
+      return 0.35;
+    }
+  });
+
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const musicVolumeRef = useRef(musicVolume);
+  musicVolumeRef.current = musicVolume;
+  const musicEnabledRef = useRef(musicEnabled);
+  musicEnabledRef.current = musicEnabled;
 
   // Инициализация HTML5 Audio
   useEffect(() => {
     const audio = new Audio('/sounds/ambient.mp3');
     audio.loop = true;
-    audio.volume = 0.10; // Мягкая, ненавязчивая фоновая громкость
+    audio.volume = Math.min(1, musicVolumeRef.current * 0.4);
     audioRef.current = audio;
 
     const handlePlay = () => setIsPlaying(true);
@@ -42,14 +55,13 @@ export function useBackgroundMusic() {
     const audio = audioRef.current;
     if (!audio) return;
 
-    if (musicEnabled) {
+    if (musicEnabled && musicVolumeRef.current > 0) {
+      audio.volume = Math.min(1, musicVolumeRef.current * 0.4);
       const playPromise = audio.play();
       if (playPromise !== undefined) {
         playPromise.catch(() => {
-          // Если браузер заблокировал автовоспроизведение до первого клика,
-          // запускаем при первом взаимодействии пользователя с экраном
           const unlock = () => {
-            if (audioRef.current && musicEnabled) {
+            if (audioRef.current && musicEnabledRef.current && !document.hidden && musicVolumeRef.current > 0) {
               audioRef.current.play().catch(() => {});
             }
             window.removeEventListener('click', unlock);
@@ -64,17 +76,86 @@ export function useBackgroundMusic() {
     }
   }, [musicEnabled]);
 
+  // Приостановка музыки при блокировке экрана / сворачивании приложения
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      const audio = audioRef.current;
+      if (!audio) return;
+
+      if (document.hidden || document.visibilityState === 'hidden') {
+        audio.pause();
+      } else if (musicEnabledRef.current && musicVolumeRef.current > 0) {
+        audio.play().catch(() => {});
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('pagehide', handleVisibilityChange);
+    window.addEventListener('pageshow', handleVisibilityChange);
+    window.addEventListener('blur', handleVisibilityChange);
+    window.addEventListener('focus', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('pagehide', handleVisibilityChange);
+      window.removeEventListener('pageshow', handleVisibilityChange);
+      window.removeEventListener('blur', handleVisibilityChange);
+      window.removeEventListener('focus', handleVisibilityChange);
+    };
+  }, []);
+
+  const setMusicVolume = useCallback((newVol: number) => {
+    const clamped = Math.max(0, Math.min(1, newVol));
+    setMusicVolumeState(clamped);
+    musicVolumeRef.current = clamped;
+
+    if (clamped > 0 && !musicEnabledRef.current) {
+      setMusicEnabled(true);
+      musicEnabledRef.current = true;
+      try {
+        localStorage.setItem(STORAGE_KEY, 'true');
+      } catch {
+        // ignore
+      }
+    }
+
+    try {
+      localStorage.setItem(VOLUME_KEY, String(clamped));
+    } catch {
+      // ignore
+    }
+
+    if (audioRef.current) {
+      audioRef.current.volume = Math.min(1, clamped * 0.4);
+      if (clamped === 0) {
+        audioRef.current.pause();
+      } else if (musicEnabledRef.current && audioRef.current.paused) {
+        audioRef.current.play().catch(() => {});
+      }
+    }
+  }, []);
+
   const toggleMusic = useCallback(() => {
     setMusicEnabled((prev) => {
       const next = !prev;
+      musicEnabledRef.current = next;
       try {
         localStorage.setItem(STORAGE_KEY, String(next));
       } catch {
-        // Игнорируем ошибки localStorage
+        // ignore
+      }
+      if (next && musicVolumeRef.current === 0) {
+        setMusicVolume(0.35);
       }
       return next;
     });
-  }, []);
+  }, [setMusicVolume]);
 
-  return { musicEnabled, toggleMusic, isPlaying };
+  return {
+    musicEnabled,
+    musicVolume,
+    setMusicVolume,
+    toggleMusic,
+    isPlaying,
+  };
 }
