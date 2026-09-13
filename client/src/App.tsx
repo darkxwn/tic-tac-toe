@@ -30,7 +30,8 @@ import { Menu } from './components/Menu';
 import { ThemeSwitcher } from './components/ThemeSwitcher';
 import { LanguageSwitcher } from './components/LanguageSwitcher';
 import { SettingsModal } from './components/SettingsModal';
-import { ArrowLeft, Volume2, VolumeX, AlertCircle, Music, Settings } from 'lucide-react';
+import { DynamicBackground } from './components/DynamicBackground';
+import { ArrowLeft, Volume2, VolumeX, AlertCircle, Music, Settings, Shapes } from 'lucide-react';
 import { StatusBar } from '@capacitor/status-bar';
 import { Capacitor } from '@capacitor/core';
 
@@ -41,6 +42,19 @@ export function App() {
   const { soundEnabled, soundVolume, setSoundVolume, toggleSound, playSound } = useSound();
   const { musicEnabled, musicVolume, setMusicVolume, toggleMusic } = useBackgroundMusic();
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [dynamicBgEnabled, setDynamicBgEnabled] = useState<boolean>(() => {
+    const saved = localStorage.getItem('infinity_ttt_dynamic_bg');
+    return saved === null ? true : saved === 'true';
+  });
+
+  const toggleDynamicBg = () => {
+    setDynamicBgEnabled((prev) => {
+      const next = !prev;
+      localStorage.setItem('infinity_ttt_dynamic_bg', String(next));
+      return next;
+    });
+  };
+
   const isNative = Capacitor.isNativePlatform();
 
   // Скрытие системного StatusBar для полноэкранного игрового режима
@@ -331,9 +345,11 @@ export function App() {
   const activeWinning = isOnlinePlaying ? network.winningState : winningState;
 
   return (
-    <main className="min-h-[100dvh] w-full flex flex-col justify-between pt-14 pb-3 px-4 sm:p-6 max-w-xl mx-auto select-none">
-      {/* Верхняя панель: Кнопка возврата, выбор темы, язык, звук, музыка или кнопка настроек */}
-      <header className="flex items-center justify-between w-full mb-3 sm:mb-4 gap-2">
+    <>
+      <DynamicBackground enabled={dynamicBgEnabled} />
+      <main className="relative z-10 min-h-[100dvh] w-full flex flex-col justify-between pt-14 pb-3 px-4 sm:p-6 max-w-xl mx-auto select-none">
+        {/* Верхняя панель: Кнопка возврата, выбор темы, язык, звук, музыка или кнопка настроек */}
+        <header className="flex items-center justify-between w-full mb-3 sm:mb-4 gap-2">
         {gameMode ? (
           <button
             onClick={handleRequestGoHome}
@@ -469,6 +485,24 @@ export function App() {
                   </div>
                 </div>
               </div>
+
+              {/* Динамический фон */}
+              <button
+                type="button"
+                onClick={toggleDynamicBg}
+                className={`h-9 w-9 sm:h-10 sm:w-10 rounded-2xl border transition-all cursor-pointer active:scale-95 flex items-center justify-center ${
+                  dynamicBgEnabled
+                    ? 'bg-cyan-500/15 border-cyan-500/40 text-cyan-400 shadow-sm shadow-cyan-500/20'
+                    : 'bg-[var(--bg-surface)] border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                }`}
+                title={dynamicBgEnabled ? t.dynamicBgDisable : t.dynamicBgEnable}
+              >
+                <Shapes
+                  className={`w-4 h-4 ${
+                    dynamicBgEnabled ? 'text-cyan-400' : 'opacity-60'
+                  }`}
+                />
+              </button>
             </div>
           </>
         )}
@@ -640,8 +674,11 @@ export function App() {
         musicVolume={musicVolume}
         onToggleMusic={toggleMusic}
         onSetMusicVolume={setMusicVolume}
+        dynamicBgEnabled={dynamicBgEnabled}
+        onToggleDynamicBg={toggleDynamicBg}
       />
     </main>
+    </>
   );
 }
 

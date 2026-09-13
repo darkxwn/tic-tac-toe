@@ -1,5 +1,5 @@
 import React from 'react';
-import { Settings, X, Volume2, VolumeX, Music } from 'lucide-react';
+import { Settings, X, Volume2, VolumeX, Music, Shapes } from 'lucide-react';
 import { ThemeSwitcher } from './ThemeSwitcher';
 import type { Language, Translations } from '../i18n/translations';
 
@@ -17,6 +17,8 @@ interface SettingsModalProps {
   musicVolume: number;
   onToggleMusic: () => void;
   onSetMusicVolume: (vol: number) => void;
+  dynamicBgEnabled: boolean;
+  onToggleDynamicBg: () => void;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -33,6 +35,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   musicVolume,
   onToggleMusic,
   onSetMusicVolume,
+  dynamicBgEnabled,
+  onToggleDynamicBg,
 }) => {
   if (!isOpen) return null;
 
@@ -192,6 +196,55 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </span>
             </div>
           </div>
+        </div>
+
+        {/* 5. Динамический фон */}
+        <div className="flex flex-col gap-1.5">
+          <span className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">
+            {t.dynamicBg}
+          </span>
+          <button
+            type="button"
+            onClick={onToggleDynamicBg}
+            className={`flex items-center justify-between p-2.5 sm:p-3 bg-[var(--bg-surface)] border rounded-2xl transition-all cursor-pointer active:scale-[0.99] ${
+              dynamicBgEnabled
+                ? 'border-cyan-500/40 shadow-sm shadow-cyan-500/10'
+                : 'border-[var(--border-color)]'
+            }`}
+          >
+            <div className="flex items-center gap-2.5">
+              <div
+                className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${
+                  dynamicBgEnabled
+                    ? 'bg-cyan-500/15 text-cyan-400'
+                    : 'bg-[var(--bg-card)] text-[var(--text-secondary)]'
+                }`}
+              >
+                <Shapes className="w-5 h-5" />
+              </div>
+              <div className="flex flex-col text-left">
+                <span className="text-xs font-bold text-[var(--text-primary)]">
+                  {t.dynamicBg}
+                </span>
+                <span className="text-[11px] text-[var(--text-secondary)]">
+                  {t.dynamicBgDesc}
+                </span>
+              </div>
+            </div>
+
+            {/* Стильный переключатель (Toggle Switch) */}
+            <div
+              className={`w-11 h-6 rounded-full transition-colors relative p-0.5 ${
+                dynamicBgEnabled ? 'bg-cyan-500' : 'bg-slate-700/60'
+              }`}
+            >
+              <div
+                className={`w-5 h-5 rounded-full bg-white transition-transform ${
+                  dynamicBgEnabled ? 'translate-x-5' : 'translate-x-0'
+                }`}
+              />
+            </div>
+          </button>
         </div>
 
         {/* Кнопка закрытия */}

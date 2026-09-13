@@ -13,11 +13,23 @@ import { INITIAL_BOARD, INITIAL_QUEUES } from '../logic/gameLogic';
 
 const isNative = typeof window !== 'undefined' && Capacitor.isNativePlatform();
 
-const DEFAULT_WS_URL =
-  import.meta.env.VITE_WS_URL ||
-  (!isNative && typeof window !== 'undefined' && window.location.hostname === 'localhost'
-    ? 'ws://localhost:3001'
-    : 'wss://tic-tac-toe-relay.fly.dev');
+function getDefaultWsUrl(): string {
+  if (import.meta.env.VITE_WS_URL) {
+    return import.meta.env.VITE_WS_URL;
+  }
+  // In browser: dynamically connect to the same host (works on any Fly.io domain or custom domain)
+  if (!isNative && typeof window !== 'undefined') {
+    if (window.location.hostname === 'localhost' && window.location.port === '5173') {
+      return 'ws://localhost:3001';
+    }
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    return `${protocol}//${window.location.host}`;
+  }
+  // Fallback for native Android APK
+  return 'wss://inf-tic-tac-toe.fly.dev';
+}
+
+const DEFAULT_WS_URL = getDefaultWsUrl();
 
 export function useNetworkGame() {
   const [status, setStatus] = useState<

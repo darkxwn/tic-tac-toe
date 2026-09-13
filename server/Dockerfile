@@ -6,7 +6,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install --omit=dev
 
-# Копируем исходный код
+# Копируем веб-приложение и исходный код
+COPY public/ ./public/
 COPY src/ ./src/
 
 ENV PORT=3001

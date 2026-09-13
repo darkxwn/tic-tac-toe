@@ -17,6 +17,10 @@ export const translations = {
     languageLabel: 'Язык интерфейса',
     soundEffects: 'Звуковые эффекты',
     relaxingMusic: 'Фоновая музыка',
+    dynamicBg: 'Динамический фон',
+    dynamicBgDesc: 'Плавные парящие фигуры',
+    dynamicBgDisable: 'Выключить динамический фон',
+    dynamicBgEnable: 'Включить динамический фон',
     close: 'Закрыть',
 
     // Themes
@@ -138,6 +142,10 @@ export const translations = {
     languageLabel: 'Language',
     soundEffects: 'Sound Effects',
     relaxingMusic: 'Background Music',
+    dynamicBg: 'Dynamic Background',
+    dynamicBgDesc: 'Smooth floating shapes',
+    dynamicBgDisable: 'Disable dynamic background',
+    dynamicBgEnable: 'Enable dynamic background',
     close: 'Close',
 
     // Themes

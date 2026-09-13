@@ -1,9 +1,9 @@
-# fly.toml app configuration file generated for tic-tac-toe-relay on 2026-09-13T17:16:42+03:00
+# fly.toml app configuration file generated for inf-tic-tac-toe on 2026-09-13T23:17:49+03:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'tic-tac-toe-relay'
+app = 'inf-tic-tac-toe'
 primary_region = 'fra'
 
 [build]
@@ -16,6 +16,6 @@ primary_region = 'fra'
   processes = ['app']
 
 [[vm]]
-  memory = '512mb'
+  memory = '1gb'
   cpus = 1
-  memory_mb = 512
+  memory_mb = 1024
