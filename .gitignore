@@ -34,5 +34,7 @@ pnpm-debug.log*
 .DS_Store
 Thumbs.db
 *.apk
+*.keystore
+*.jks
 
 scripts/

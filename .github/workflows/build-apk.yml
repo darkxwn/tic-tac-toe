@@ -58,16 +58,27 @@ jobs:
         working-directory: ./client/android
         run: chmod +x gradlew
 
-      - name: Build Debug APKs (Universal, arm64-v8a, armeabi-v7a)
+      - name: Decode Release Keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 --decode > client/android/app/release.keystore
+
+      - name: Build Release APKs (Universal, arm64-v8a, armeabi-v7a)
         working-directory: ./client/android
-        run: ./gradlew assembleDebug --stacktrace
+        env:
+          KEYSTORE_PATH: release.keystore
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: ./gradlew assembleRelease --stacktrace
 
       - name: Prepare APKs for Release
         run: |
           mkdir -p release-apks
-          cp client/android/app/build/outputs/apk/debug/app-universal-debug.apk release-apks/tic-tac-toe-universal.apk
-          cp client/android/app/build/outputs/apk/debug/app-arm64-v8a-debug.apk release-apks/tic-tac-toe-arm64-v8a.apk
-          cp client/android/app/build/outputs/apk/debug/app-armeabi-v7a-debug.apk release-apks/tic-tac-toe-armeabi-v7a.apk
+          cp client/android/app/build/outputs/apk/release/app-universal-release.apk release-apks/tic-tac-toe-universal.apk
+          cp client/android/app/build/outputs/apk/release/app-arm64-v8a-release.apk release-apks/tic-tac-toe-arm64-v8a.apk
+          cp client/android/app/build/outputs/apk/release/app-armeabi-v7a-release.apk release-apks/tic-tac-toe-armeabi-v7a.apk
 
       - name: Determine Release Tag
         id: release_tag
