@@ -95,8 +95,9 @@ const server = http.createServer((req, res) => {
 const wss = new WebSocketServer({ server });
 
 const PORT = process.env.PORT || 3001;
-server.listen(Number(PORT), '0.0.0.0', () => {
-  console.log(`[Relay Server] HTTP & WebSocket сервер запущен на порту ${PORT}`);
+const HOST = process.env.IP || '0.0.0.0';
+server.listen(Number(PORT), HOST, () => {
+  console.log(`[Relay Server] HTTP & WebSocket сервер запущен на ${HOST}:${PORT}`);
 });
 
 // Алфавит для генерации кодов (без похожих символов: 0, O, 1, I, L)

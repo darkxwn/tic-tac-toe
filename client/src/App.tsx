@@ -508,26 +508,28 @@ export function App() {
         )}
       </header>
 
-      {/* Ошибки в онлайне */}
-      {network.errorMessage && (
-        <div className="mb-3 p-3 bg-rose-950/80 border border-rose-500/50 rounded-2xl text-xs text-rose-200 flex items-center justify-between gap-2 animate-pop">
-          <div className="flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
-            <span>{network.errorMessage}</span>
+      {/* Всплывающие информационные уведомления (под хедером, не сдвигая контент) */}
+      <div className="relative w-full h-0 z-[60]">
+        {network.errorMessage && (
+          <div className="absolute top-0 left-0 right-0 p-3 bg-rose-950/95 border border-rose-500/60 rounded-2xl text-xs text-rose-200 flex items-center justify-between gap-3 shadow-2xl backdrop-blur-md animate-pop">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+              <span className="font-medium truncate sm:whitespace-normal">{network.errorMessage}</span>
+            </div>
+            <button
+              onClick={() => {
+                network.clearError();
+                if (gameMode === 'online') {
+                  handleGoHome();
+                }
+              }}
+              className="px-3 py-1.5 bg-rose-900/90 hover:bg-rose-800 text-white rounded-xl font-bold text-xs cursor-pointer active:scale-95 transition-all shadow-sm shrink-0"
+            >
+              OK
+            </button>
           </div>
-          <button
-            onClick={() => {
-              network.clearError();
-              if (gameMode === 'online') {
-                handleGoHome();
-              }
-            }}
-            className="px-3 py-1.5 bg-rose-900 hover:bg-rose-800 text-white rounded-xl font-bold text-xs cursor-pointer active:scale-95 transition-all shadow-sm"
-          >
-            OK
-          </button>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Основной контент */}
       <section className="flex-1 flex flex-col justify-center items-center w-full">
