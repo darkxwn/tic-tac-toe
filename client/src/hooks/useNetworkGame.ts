@@ -26,7 +26,7 @@ function getDefaultWsUrl(): string {
     return `${protocol}//${window.location.host}`;
   }
   // Fallback for native Android APK
-  return 'wss://inf-tic-tac-toe.fly.dev';
+  return 'wss://inf-ttt.alwaysdata.net';
 }
 
 const DEFAULT_WS_URL = getDefaultWsUrl();
