@@ -34,6 +34,8 @@ import { DynamicBackground } from './components/DynamicBackground';
 import { ArrowLeft, Volume2, VolumeX, AlertCircle, Music, Settings, Shapes } from 'lucide-react';
 import { StatusBar } from '@capacitor/status-bar';
 import { Capacitor } from '@capacitor/core';
+import { App as CapApp } from '@capacitor/app';
+import { useBackButton, triggerBack } from './services/backButton';
 
 export function App() {
   const { lang, toggleLang, t } = useLanguage();
@@ -61,6 +63,22 @@ export function App() {
   useEffect(() => {
     StatusBar.hide().catch(() => {});
   }, []);
+
+  // Обработка аппаратной/системной кнопки «Назад» на Android через Capacitor App
+  useEffect(() => {
+    if (!isNative) return;
+
+    const listenerPromise = CapApp.addListener('backButton', () => {
+      const handled = triggerBack();
+      if (!handled) {
+        CapApp.exitApp();
+      }
+    });
+
+    return () => {
+      listenerPromise.then((handle) => handle.remove()).catch(() => {});
+    };
+  }, [isNative]);
 
   // Режим экрана
   const [gameMode, setGameMode] = useState<GameMode | null>(null);
@@ -343,6 +361,18 @@ export function App() {
   const activeTurn = isOnlinePlaying ? network.currentTurn : currentTurn;
   const activePlayers = isOnlinePlaying ? network.players : players;
   const activeWinning = isOnlinePlaying ? network.winningState : winningState;
+
+  // Послойная обработка кнопки «Назад» на Android (по приоритетам):
+  useBackButton(() => { network.clearError(); }, Boolean(network.errorMessage), 120);
+  useBackButton(() => { setShowExitConfirm(false); }, showExitConfirm, 110);
+  useBackButton(() => { setShowSettingsModal(false); }, showSettingsModal, 100);
+  useBackButton(() => {
+    setShowLobbyModal(false);
+    network.leaveRoom();
+    handleGoHome();
+  }, showLobbyModal, 100);
+  useBackButton(() => { handleGoHome(); }, Boolean(activeWinning && showGameOverModal), 90);
+  useBackButton(() => { handleRequestGoHome(); }, Boolean(gameMode && !showGameOverModal && !showExitConfirm), 50);
 
   return (
     <>

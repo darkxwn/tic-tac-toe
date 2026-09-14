@@ -3,6 +3,7 @@ import type { BotDifficulty } from '../types/game';
 import type { GameStats } from '../hooks/useGameStats';
 import type { Translations } from '../i18n/translations';
 import { StatsView } from './StatsView';
+import { useBackButton } from '../services/backButton';
 import {
   Bot,
   Users,
@@ -57,6 +58,11 @@ export const Menu: React.FC<MenuProps> = ({
   const [hotseatOpponentName, setHotseatOpponentName] = useState('');
   const [multiplayerTab, setMultiplayerTab] = useState<'hotseat' | 'online'>('hotseat');
   const [showRules, setShowRules] = useState(false);
+
+  // Обработка аппаратной кнопки «Назад» внутри меню
+  useBackButton(() => { setShowRules(false); }, showRules, 100);
+  useBackButton(() => { setView(previousView); }, view === 'stats', 40);
+  useBackButton(() => { setView('main'); }, view === 'bot_setup' || view === 'multiplayer_setup', 40);
 
   // Состояние поля ввода ника
   const [draftName, setDraftName] = useState(playerName);
