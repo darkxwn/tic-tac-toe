@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import type {
   BoardState,
   BotDifficulty,
@@ -7,6 +7,7 @@ import type {
   PlayerProfiles,
   PlayerQueues,
   WinningState,
+  SideChoice,
 } from './types/game';
 import {
   checkWinner,
@@ -88,11 +89,21 @@ export function App() {
   const [board, setBoard] = useState<BoardState>(INITIAL_BOARD);
   const [queues, setQueues] = useState<PlayerQueues>(INITIAL_QUEUES);
   const [currentTurn, setCurrentTurn] = useState<Player>('X');
-  const [scores, setScores] = useState<{ X: number; O: number }>({ X: 0, O: 0 });
   const [winningState, setWinningState] = useState<WinningState | null>(null);
   const [showGameOverModal, setShowGameOverModal] = useState(false);
   const [isBotThinking, setIsBotThinking] = useState(false);
   const [players, setPlayers] = useState<PlayerProfiles>({ X: playerName, O: t.botName });
+
+  // Роли игроков и сессионный счёт
+  const [humanRole, setHumanRole] = useState<Player>('X');
+  const humanRoleRef = useRef<Player>(humanRole);
+  humanRoleRef.current = humanRole;
+
+  const [hotseatP1Role, setHotseatP1Role] = useState<Player>('X');
+  const [hotseatP2Name, setHotseatP2Name] = useState<string>('');
+
+  // Сессионный счёт: p1 (пользователь/хозяин) vs p2 (бот/соперник)
+  const [sessionScores, setSessionScores] = useState({ p1: 0, p2: 0 });
 
   // Рефы для стабильной работы хода бота без отмены таймера
   const boardRef = useRef(board);
@@ -109,6 +120,26 @@ export function App() {
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [isHost, setIsHost] = useState(false);
   const network = useNetworkGame();
+
+  // Вычисление счёта для карточек X и O в зависимости от ролей игроков
+  const computedScores = useMemo(() => {
+    if (gameMode === 'bot') {
+      return humanRole === 'X'
+        ? { X: sessionScores.p1, O: sessionScores.p2 }
+        : { X: sessionScores.p2, O: sessionScores.p1 };
+    }
+    if (gameMode === 'hotseat') {
+      return hotseatP1Role === 'X'
+        ? { X: sessionScores.p1, O: sessionScores.p2 }
+        : { X: sessionScores.p2, O: sessionScores.p1 };
+    }
+    if (gameMode === 'online' && network.myRole) {
+      return network.myRole === 'X'
+        ? { X: sessionScores.p1, O: sessionScores.p2 }
+        : { X: sessionScores.p2, O: sessionScores.p1 };
+    }
+    return { X: 0, O: 0 };
+  }, [gameMode, humanRole, hotseatP1Role, network.myRole, sessionScores]);
 
   const triggerSound = useCallback(
     (type: 'move' | 'click') => {
@@ -131,13 +162,23 @@ export function App() {
   const handleLocalWinSequence = useCallback(
     (win: WinningState) => {
       setWinningState(win);
-      setScores((prev) => ({ ...prev, [win.winner]: prev[win.winner] + 1 }));
 
-      // Учёт статистики
+      // Учёт статистики и сессионных очков
       if (gameMode === 'bot') {
-        const isHumanWin = win.winner === 'X';
+        const isHumanWin = win.winner === humanRoleRef.current;
+        setSessionScores((prev) => ({
+          ...prev,
+          p1: isHumanWin ? prev.p1 + 1 : prev.p1,
+          p2: !isHumanWin ? prev.p2 + 1 : prev.p2,
+        }));
         recordResult('bot', isHumanWin, botDiffRef.current);
       } else if (gameMode === 'hotseat') {
+        const isP1Win = win.winner === hotseatP1Role;
+        setSessionScores((prev) => ({
+          ...prev,
+          p1: isP1Win ? prev.p1 + 1 : prev.p1,
+          p2: !isP1Win ? prev.p2 + 1 : prev.p2,
+        }));
         recordResult('hotseat', true);
       }
 
@@ -146,34 +187,57 @@ export function App() {
         setShowGameOverModal(true);
       }, 1300);
     },
-    [gameMode, recordResult, triggerSound]
+    [gameMode, hotseatP1Role, recordResult]
   );
 
   // Старт игры с ботом (Сложности: Новичок, Средний, Сложный)
-  const handleStartBotGame = (difficulty: BotDifficulty) => {
+  const handleStartBotGame = (difficulty: BotDifficulty, side: SideChoice) => {
     setGameMode('bot');
     setBotDifficulty(difficulty);
+    const chosenRole: Player = side === 'random' ? (Math.random() < 0.5 ? 'X' : 'O') : side;
+    setHumanRole(chosenRole);
+    humanRoleRef.current = chosenRole;
+
     const diffLabel = difficulty === 'easy' ? t.diffEasy : difficulty === 'medium' ? t.diffMedium : t.diffHard;
-    setPlayers({ X: playerName, O: `${t.botName} (${diffLabel})` });
-    setScores({ X: 0, O: 0 });
+    const botTitle = `${t.botName} (${diffLabel})`;
+
+    if (chosenRole === 'X') {
+      setPlayers({ X: playerName, O: botTitle });
+    } else {
+      setPlayers({ X: botTitle, O: playerName });
+    }
+
+    setSessionScores({ p1: 0, p2: 0 });
     resetLocalGame('X');
     triggerSound('click');
   };
 
-  // Старт Hotseat
-  const handleStartHotseatGame = (player2Name: string) => {
+  // Старт Hotseat (на одном экране)
+  const handleStartHotseatGame = (player2Name: string, side: SideChoice) => {
     setGameMode('hotseat');
-    setPlayers({ X: playerName, O: player2Name });
-    setScores({ X: 0, O: 0 });
+    const p2Clean = player2Name.trim() || t.player2Default;
+    setHotseatP2Name(p2Clean);
+
+    const chosenRole: Player = side === 'random' ? (Math.random() < 0.5 ? 'X' : 'O') : side;
+    setHotseatP1Role(chosenRole);
+
+    if (chosenRole === 'X') {
+      setPlayers({ X: playerName, O: p2Clean });
+    } else {
+      setPlayers({ X: p2Clean, O: playerName });
+    }
+
+    setSessionScores({ p1: 0, p2: 0 });
     resetLocalGame('X');
     triggerSound('click');
   };
 
   // Старт создания онлайн-комнаты
-  const handleStartOnlineCreate = () => {
+  const handleStartOnlineCreate = (side: SideChoice) => {
     setIsHost(true);
     setShowLobbyModal(true);
-    network.createRoom(playerName);
+    setSessionScores({ p1: 0, p2: 0 });
+    network.createRoom(playerName, side);
     triggerSound('click');
   };
 
@@ -181,6 +245,7 @@ export function App() {
   const handleStartOnlineJoin = () => {
     setIsHost(false);
     setShowLobbyModal(true);
+    setSessionScores({ p1: 0, p2: 0 });
     triggerSound('click');
   };
 
@@ -197,6 +262,7 @@ export function App() {
   // Ход игрока в локальных режимах (человек)
   const handleLocalCellClick = (cellIndex: number) => {
     if (winningState || board[cellIndex] !== null || isBotThinking) return;
+    if (gameMode === 'bot' && currentTurn !== humanRole) return;
 
     // Выполняем ход
     const { nextBoard, nextQueues } = executeMove(board, queues, currentTurn, cellIndex);
@@ -217,9 +283,11 @@ export function App() {
     setCurrentTurn(nextTurn);
   };
 
+  const botRole: Player = humanRole === 'X' ? 'O' : 'X';
+
   // Ход бота
   useEffect(() => {
-    if (gameMode !== 'bot' || currentTurn !== 'O' || winningState) {
+    if (gameMode !== 'bot' || currentTurn !== botRole || winningState) {
       setIsBotThinking(false);
       return;
     }
@@ -229,9 +297,10 @@ export function App() {
       const currentB = boardRef.current;
       const currentQ = queuesRef.current;
       const diff = botDiffRef.current;
+      const currentBotRole = humanRoleRef.current === 'X' ? 'O' : 'X';
 
-      const botMove = getBotMove(currentB, currentQ, 'O', diff);
-      const { nextBoard, nextQueues } = executeMove(currentB, currentQ, 'O', botMove);
+      const botMove = getBotMove(currentB, currentQ, currentBotRole, diff);
+      const { nextBoard, nextQueues } = executeMove(currentB, currentQ, currentBotRole, botMove);
       triggerSound('move');
 
       setBoard(nextBoard);
@@ -241,13 +310,13 @@ export function App() {
       if (win) {
         handleLocalWinSequence(win);
       } else {
-        setCurrentTurn('X');
+        setCurrentTurn(humanRoleRef.current);
       }
       setIsBotThinking(false);
     }, 450);
 
     return () => clearTimeout(timer);
-  }, [gameMode, currentTurn, winningState, handleLocalWinSequence, triggerSound]);
+  }, [gameMode, currentTurn, winningState, botRole, handleLocalWinSequence, triggerSound]);
 
   // Обработка сетевого хода
   const handleOnlineCellClick = (cellIndex: number) => {
@@ -281,6 +350,11 @@ export function App() {
   useEffect(() => {
     if (network.winningState) {
       const isMeWinner = network.winningState.winner === network.myRole;
+      setSessionScores((prev) => ({
+        ...prev,
+        p1: isMeWinner ? prev.p1 + 1 : prev.p1,
+        p2: !isMeWinner ? prev.p2 + 1 : prev.p2,
+      }));
       recordResult('online', isMeWinner);
 
       const timer = setTimeout(() => {
@@ -290,16 +364,40 @@ export function App() {
     } else {
       setShowGameOverModal(false);
     }
-  }, [network.winningState, network.myRole, recordResult, triggerSound]);
+  }, [network.winningState, network.myRole, recordResult]);
 
-  // Реванш
+  // Реванш с переменой сторон
   const handleRematch = () => {
     if (gameMode === 'online') {
       network.requestRematch();
-    } else {
-      // Смена первого хода для честности
-      const nextStarter: Player = currentTurn === 'X' ? 'O' : 'X';
-      resetLocalGame(nextStarter);
+    } else if (gameMode === 'bot') {
+      // Смена ролей: кто играл за X, теперь играет за O (и наоборот)
+      const nextHumanRole: Player = humanRole === 'X' ? 'O' : 'X';
+      setHumanRole(nextHumanRole);
+      humanRoleRef.current = nextHumanRole;
+
+      const diffLabel = botDifficulty === 'easy' ? t.diffEasy : botDifficulty === 'medium' ? t.diffMedium : t.diffHard;
+      const botTitle = `${t.botName} (${diffLabel})`;
+
+      if (nextHumanRole === 'X') {
+        setPlayers({ X: playerName, O: botTitle });
+      } else {
+        setPlayers({ X: botTitle, O: playerName });
+      }
+
+      resetLocalGame('X');
+    } else if (gameMode === 'hotseat') {
+      // Смена ролей на одном экране
+      const nextP1Role: Player = hotseatP1Role === 'X' ? 'O' : 'X';
+      setHotseatP1Role(nextP1Role);
+
+      if (nextP1Role === 'X') {
+        setPlayers({ X: playerName, O: hotseatP2Name });
+      } else {
+        setPlayers({ X: hotseatP2Name, O: playerName });
+      }
+
+      resetLocalGame('X');
     }
     triggerSound('click');
   };
@@ -313,6 +411,9 @@ export function App() {
     setShowLobbyModal(false);
     setShowGameOverModal(false);
     setShowExitConfirm(false);
+    setSessionScores({ p1: 0, p2: 0 });
+    setHumanRole('X');
+    setHotseatP1Role('X');
     resetLocalGame('X');
     triggerSound('click');
   };
@@ -580,9 +681,9 @@ export function App() {
             <ScoreBoard
               currentTurn={activeTurn}
               players={activePlayers}
-              scores={scores}
+              scores={computedScores}
               queues={activeQueues}
-              myRole={isOnlinePlaying ? network.myRole : null}
+              myRole={isOnlinePlaying ? network.myRole : gameMode === 'bot' ? humanRole : null}
               botDifficulty={gameMode === 'bot' ? botDifficulty : null}
               t={{
                 turnBadge: t.turnBadge,
@@ -599,7 +700,7 @@ export function App() {
               winningLine={activeWinning ? activeWinning.line : null}
               disabled={
                 Boolean(activeWinning) ||
-                (gameMode === 'bot' && (currentTurn === 'O' || isBotThinking)) ||
+                (gameMode === 'bot' && (currentTurn !== humanRole || isBotThinking)) ||
                 (isOnlinePlaying && network.currentTurn !== network.myRole)
               }
               onCellClick={(idx) => {
@@ -616,8 +717,14 @@ export function App() {
                 ) : (
                   <span>{t.opponentTurnHint}</span>
                 )
-              ) : gameMode === 'bot' && isBotThinking ? (
-                <span className="text-purple-400 animate-pulse">{t.botThinkingHint}</span>
+              ) : gameMode === 'bot' ? (
+                isBotThinking ? (
+                  <span className="text-purple-400 animate-pulse">{t.botThinkingHint}</span>
+                ) : currentTurn === humanRole ? (
+                  <span className="text-cyan-400">{t.yourTurnHint}</span>
+                ) : (
+                  <span>{t.opponentTurnHint}</span>
+                )
               ) : (
                 <span>
                   {t.playerTurnHint}:{' '}
@@ -666,7 +773,7 @@ export function App() {
             gameMode === 'online'
               ? network.myRole === activeWinning.winner
               : gameMode === 'bot'
-              ? activeWinning.winner === 'X'
+              ? activeWinning.winner === humanRole
               : true
           }
           rematchRequestedByMe={network.rematchRequestedByMe}

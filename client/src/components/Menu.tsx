@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import type { BotDifficulty } from '../types/game';
+import type { BotDifficulty, SideChoice } from '../types/game';
 import type { GameStats } from '../hooks/useGameStats';
 import type { Translations } from '../i18n/translations';
 import { StatsView } from './StatsView';
+import { SideSelector } from './SideSelector';
 import { useBackButton } from '../services/backButton';
 import {
   Bot,
@@ -33,9 +34,9 @@ interface MenuProps {
   t: Translations;
   onResetStats: () => void;
   onSavePlayerName: (name: string) => void;
-  onStartBotGame: (difficulty: BotDifficulty) => void;
-  onStartHotseatGame: (player2Name: string) => void;
-  onStartOnlineCreate: () => void;
+  onStartBotGame: (difficulty: BotDifficulty, side: SideChoice) => void;
+  onStartHotseatGame: (player2Name: string, side: SideChoice) => void;
+  onStartOnlineCreate: (side: SideChoice) => void;
   onStartOnlineJoin: () => void;
 }
 
@@ -55,6 +56,9 @@ export const Menu: React.FC<MenuProps> = ({
   const [view, setView] = useState<MenuView>('main');
   const [previousView, setPreviousView] = useState<MenuView>('main');
   const [selectedDifficulty, setSelectedDifficulty] = useState<BotDifficulty>('medium');
+  const [botSide, setBotSide] = useState<SideChoice>('random');
+  const [hotseatSide, setHotseatSide] = useState<SideChoice>('X');
+  const [onlineSide, setOnlineSide] = useState<SideChoice>('random');
   const [hotseatOpponentName, setHotseatOpponentName] = useState('');
   const [multiplayerTab, setMultiplayerTab] = useState<'hotseat' | 'online'>('hotseat');
   const [showRules, setShowRules] = useState(false);
@@ -263,6 +267,11 @@ export const Menu: React.FC<MenuProps> = ({
             {t.botCalculates}
           </p>
 
+          {/* Выбор стороны (X / Случайно / O) */}
+          <div className="mb-4">
+            <SideSelector value={botSide} onChange={setBotSide} t={t} />
+          </div>
+
           <div className="flex flex-col gap-2.5 mb-5">
             {[
               {
@@ -326,7 +335,7 @@ export const Menu: React.FC<MenuProps> = ({
           </div>
 
           <button
-            onClick={() => onStartBotGame(selectedDifficulty)}
+            onClick={() => onStartBotGame(selectedDifficulty, botSide)}
             className="w-full py-3.5 px-4 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-sm font-bold shadow-md shadow-purple-600/25 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
           >
             <Gamepad2 className="w-4 h-4" />
@@ -382,6 +391,12 @@ export const Menu: React.FC<MenuProps> = ({
 
           {multiplayerTab === 'hotseat' ? (
             <div className="space-y-3.5 animate-pop">
+              <SideSelector
+                value={hotseatSide}
+                onChange={setHotseatSide}
+                label={t.sidePlayer1}
+                t={t}
+              />
               <div>
                 <label className="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">
                   {t.player2Label}
@@ -396,7 +411,7 @@ export const Menu: React.FC<MenuProps> = ({
                 />
               </div>
               <button
-                onClick={() => onStartHotseatGame(hotseatOpponentName.trim() || t.player2Default)}
+                onClick={() => onStartHotseatGame(hotseatOpponentName.trim() || t.player2Default, hotseatSide)}
                 className="w-full py-3.5 px-4 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-sm font-bold shadow-md shadow-cyan-600/25 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
               >
                 <Gamepad2 className="w-4 h-4" />
@@ -404,9 +419,14 @@ export const Menu: React.FC<MenuProps> = ({
               </button>
             </div>
           ) : (
-            <div className="flex flex-col gap-2.5 animate-pop pt-1">
+            <div className="flex flex-col gap-3 animate-pop pt-1">
+              <SideSelector
+                value={onlineSide}
+                onChange={setOnlineSide}
+                t={t}
+              />
               <button
-                onClick={onStartOnlineCreate}
+                onClick={() => onStartOnlineCreate(onlineSide)}
                 className="w-full py-3.5 px-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-bold shadow-md shadow-indigo-600/25 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
               >
                 <Globe className="w-4 h-4" />

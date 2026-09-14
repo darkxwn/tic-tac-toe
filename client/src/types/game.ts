@@ -28,9 +28,11 @@ export interface CellAgeInfo {
   opacity: number;
 }
 
+export type SideChoice = 'X' | 'O' | 'random';
+
 // WebSocket Protocols
 export type ClientMessage =
-  | { type: 'CREATE_ROOM'; playerName: string }
+  | { type: 'CREATE_ROOM'; playerName: string; preferredSide?: SideChoice }
   | { type: 'JOIN_ROOM'; roomCode: string; playerName: string }
   | { type: 'MAKE_MOVE'; cellIndex: number }
   | { type: 'REQUEST_REMATCH' }

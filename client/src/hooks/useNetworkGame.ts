@@ -7,6 +7,7 @@ import type {
   WinningState,
   ClientMessage,
   ServerMessage,
+  SideChoice,
 } from '../types/game';
 import { Capacitor } from '@capacitor/core';
 import { INITIAL_BOARD, INITIAL_QUEUES } from '../logic/gameLogic';
@@ -79,14 +80,14 @@ export function useNetworkGame() {
       case 'ROOM_CREATED':
         setRoomCode(msg.roomCode);
         setMyRole(msg.role);
-        setPlayers((prev) => ({ ...prev, X: msg.playerName }));
+        setPlayers((prev) => ({ ...prev, [msg.role]: msg.playerName }));
         setStatus('waiting_opponent');
         break;
 
       case 'JOIN_SUCCESS':
         setRoomCode(msg.roomCode);
         setMyRole(msg.role);
-        setPlayers((prev) => ({ ...prev, O: msg.playerName }));
+        setPlayers((prev) => ({ ...prev, [msg.role]: msg.playerName }));
         break;
 
       case 'GAME_START':
@@ -163,9 +164,9 @@ export function useNetworkGame() {
   }, [disconnect, handleServerMessage]);
 
   const createRoom = useCallback(
-    (playerName: string) => {
+    (playerName: string, preferredSide?: SideChoice) => {
       connect((ws) => {
-        const msg: ClientMessage = { type: 'CREATE_ROOM', playerName };
+        const msg: ClientMessage = { type: 'CREATE_ROOM', playerName, preferredSide };
         ws.send(JSON.stringify(msg));
       });
     },

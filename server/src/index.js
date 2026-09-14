@@ -165,12 +165,18 @@ function handleMessage(ws, data) {
       }
 
       const playerName = (data.playerName || 'Игрок 1').slice(0, 16);
+      let hostRole = 'X';
+      if (data.preferredSide === 'O') {
+        hostRole = 'O';
+      } else if (data.preferredSide === 'random') {
+        hostRole = Math.random() < 0.5 ? 'X' : 'O';
+      }
 
       const room = {
         code,
         players: {
-          X: { ws, name: playerName },
-          O: null,
+          X: hostRole === 'X' ? { ws, name: playerName } : null,
+          O: hostRole === 'O' ? { ws, name: playerName } : null,
         },
         board: Array(9).fill(null),
         queues: { X: [], O: [] },
@@ -181,16 +187,16 @@ function handleMessage(ws, data) {
 
       rooms.set(code, room);
       ws.roomCode = code;
-      ws.role = 'X';
+      ws.role = hostRole;
 
       send(ws, {
         type: 'ROOM_CREATED',
         roomCode: code,
-        role: 'X',
+        role: hostRole,
         playerName,
       });
 
-      console.log(`[Room ${code}] Создана игроком ${playerName} (X)`);
+      console.log(`[Room ${code}] Создана игроком ${playerName} (${hostRole})`);
       break;
     }
 
@@ -205,25 +211,32 @@ function handleMessage(ws, data) {
       }
 
       // Запрет подключения к собственной комнате
-      if (room.players.X && (room.players.X.ws === ws || ws.roomCode === code)) {
+      if (
+        (room.players.X && room.players.X.ws === ws) ||
+        (room.players.O && room.players.O.ws === ws) ||
+        ws.roomCode === code
+      ) {
         send(ws, { type: 'ERROR', message: 'Вы не можете присоединиться к собственной комнате.' });
         return;
       }
 
-      if (room.players.O !== null) {
+      // Находим свободную роль
+      const joinerRole = room.players.X === null ? 'X' : room.players.O === null ? 'O' : null;
+
+      if (!joinerRole) {
         send(ws, { type: 'ERROR', message: `Комната "${code}" уже заполнена двумя игроками.` });
         return;
       }
 
-      room.players.O = { ws, name: playerName };
+      room.players[joinerRole] = { ws, name: playerName };
       room.lastActive = Date.now();
       ws.roomCode = code;
-      ws.role = 'O';
+      ws.role = joinerRole;
 
       send(ws, {
         type: 'JOIN_SUCCESS',
         roomCode: code,
-        role: 'O',
+        role: joinerRole,
         playerName,
       });
 
@@ -237,7 +250,7 @@ function handleMessage(ws, data) {
         },
       });
 
-      console.log(`[Room ${code}] Игрок ${playerName} (O) подключился. Игра началась!`);
+      console.log(`[Room ${code}] Игрок ${playerName} (${joinerRole}) подключился. Игра началась!`);
       break;
     }
 
@@ -245,7 +258,7 @@ function handleMessage(ws, data) {
       const code = ws.roomCode;
       if (!code) return;
       const room = rooms.get(code);
-      if (!room || !room.players.O) return;
+      if (!room || !room.players.O || !room.players.X) return;
 
       const role = ws.role;
       if (room.currentTurn !== role) return;

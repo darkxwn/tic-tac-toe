@@ -109,8 +109,9 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5 min-w-0">
               <X className="w-5 h-5 text-[var(--color-x)] shrink-0 stroke-[3]" />
-              <div className="truncate font-semibold text-sm text-[var(--text-primary)]">
-                {players.X}
+              <div className="flex items-center gap-1 truncate font-semibold text-sm text-[var(--text-primary)]">
+                <span className="truncate">{players.X}</span>
+                {botDifficulty && myRole === 'O' && renderBotDifficultyIcon()}
                 {myRole === 'X' && <span className="text-[11px] text-cyan-400 ml-1 font-normal">{youBadge}</span>}
               </div>
             </div>
@@ -137,7 +138,7 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
               <Circle className="w-4 h-4 text-[var(--color-o)] shrink-0 stroke-[3]" />
               <div className="flex items-center gap-1 truncate font-semibold text-sm text-[var(--text-primary)]">
                 <span className="truncate">{players.O}</span>
-                {renderBotDifficultyIcon()}
+                {botDifficulty && (myRole === 'X' || !myRole) && renderBotDifficultyIcon()}
                 {myRole === 'O' && <span className="text-[11px] text-rose-400 ml-1 font-normal">{youBadge}</span>}
               </div>
             </div>

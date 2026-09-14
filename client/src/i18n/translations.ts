@@ -77,11 +77,17 @@ export const translations = {
     // Multiplayer setup
     onOneDevice: 'На одном устройстве',
     online: 'По сети (онлайн)',
-    player2Label: 'Имя второго игрока (O):',
+    player2Label: 'Имя второго игрока:',
     player2Default: 'Игрок 2',
     startHotseat: 'Начать на одном экране',
     createRoom: 'Создать новую комнату',
     joinByCode: 'Войти по коду комнаты',
+    chooseSide: 'Выберите сторону',
+    sideFirstTurn: 'Первый ход',
+    sideSecondTurn: 'Второй ход',
+    sideRandom: 'Случайно',
+    sideRandomDesc: '50 / 50',
+    sidePlayer1: 'Сторона Игрока 1',
 
     // In-game
     turnBadge: 'Ходит',
@@ -203,11 +209,17 @@ export const translations = {
     // Multiplayer setup
     onOneDevice: 'Pass & Play',
     online: 'Online',
-    player2Label: 'Player 2 Name (O):',
+    player2Label: 'Player 2 Name:',
     player2Default: 'Player 2',
-    startHotseat: 'Start 2-Player Game',
+    startHotseat: 'Play on One Screen',
     createRoom: 'Create New Room',
     joinByCode: 'Join by Room Code',
+    chooseSide: 'Choose your side',
+    sideFirstTurn: 'Goes first',
+    sideSecondTurn: 'Goes second',
+    sideRandom: 'Random',
+    sideRandomDesc: '50 / 50',
+    sidePlayer1: "Player 1's side",
 
     // In-game
     turnBadge: 'Turn',
