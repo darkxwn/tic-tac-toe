@@ -34,7 +34,7 @@ export const SideSelector: React.FC<SideSelectorProps> = ({
         >
           <div className="flex items-center gap-1">
             <XIcon className="w-4 h-4 stroke-[2.5]" />
-            <span className="text-xs font-extrabold">X</span>
+            <span className="text-xs font-extrabold"></span>
           </div>
           <span className="text-[10px] font-medium opacity-80 whitespace-nowrap">
             {t.sideFirstTurn}
@@ -43,7 +43,7 @@ export const SideSelector: React.FC<SideSelectorProps> = ({
 
         {/* Кнопка Случайно */}
         <button
-          type="button"
+          type="button" 
           onClick={() => onChange('random')}
           className={`py-2 px-2 rounded-2xl border transition-all flex flex-col items-center justify-center gap-1 cursor-pointer active:scale-95 ${
             value === 'random'
@@ -72,7 +72,7 @@ export const SideSelector: React.FC<SideSelectorProps> = ({
         >
           <div className="flex items-center gap-1">
             <OIcon className="w-4 h-4 stroke-[2.5]" />
-            <span className="text-xs font-extrabold">O</span>
+            <span className="text-xs font-extrabold"></span>
           </div>
           <span className="text-[10px] font-medium opacity-80 whitespace-nowrap">
             {t.sideSecondTurn}
