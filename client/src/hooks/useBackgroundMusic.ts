@@ -104,6 +104,8 @@ export function useBackgroundMusic() {
     };
   }, []);
 
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const setMusicVolume = useCallback((newVol: number) => {
     const clamped = Math.max(0, Math.min(1, newVol));
     setMusicVolumeState(clamped);
@@ -119,11 +121,15 @@ export function useBackgroundMusic() {
       }
     }
 
-    try {
-      localStorage.setItem(VOLUME_KEY, String(clamped));
-    } catch {
-      // ignore
-    }
+    // Дебаунс сохранения в localStorage, чтобы не блокировать поток на мобильных при перетаскивании
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = setTimeout(() => {
+      try {
+        localStorage.setItem(VOLUME_KEY, String(clamped));
+      } catch {
+        // ignore
+      }
+    }, 250);
 
     if (audioRef.current) {
       audioRef.current.volume = Math.min(1, clamped * 0.4);

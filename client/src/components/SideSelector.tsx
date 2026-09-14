@@ -33,7 +33,7 @@ export const SideSelector: React.FC<SideSelectorProps> = ({
           }`}
         >
           <div className="flex items-center gap-1">
-            <XIcon className="w-4 h-4 stroke-[2.5]" />
+            <XIcon className="w-4 h-4 stroke-[2.5]"/>
             <span className="text-xs font-extrabold"></span>
           </div>
           <span className="text-[10px] font-medium opacity-80 whitespace-nowrap">

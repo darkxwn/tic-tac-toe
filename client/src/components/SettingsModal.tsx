@@ -142,10 +142,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 type="range"
                 min="0"
                 max="1"
-                step="0.05"
+                step="0.01"
                 value={soundEnabled ? soundVolume : 0}
                 onChange={(e) => onSetSoundVolume(parseFloat(e.target.value))}
-                className="w-full h-2 rounded-lg accent-cyan-400 bg-slate-700/50 cursor-pointer"
+                className="flat-slider-horizontal"
+                style={{
+                  '--slider-fill': `linear-gradient(to right, var(--color-x, #22d3ee) 0%, var(--color-x, #22d3ee) ${soundEnabled ? Math.round(soundVolume * 100) : 0}%, rgba(148, 163, 184, 0.25) ${soundEnabled ? Math.round(soundVolume * 100) : 0}%, rgba(148, 163, 184, 0.25) 100%)`
+                } as React.CSSProperties}
                 aria-label="Sound volume"
               />
               <span className="text-xs font-mono font-bold text-[var(--text-primary)] w-9 text-right shrink-0">
@@ -185,10 +188,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 type="range"
                 min="0"
                 max="1"
-                step="0.05"
+                step="0.01"
                 value={musicEnabled ? musicVolume : 0}
                 onChange={(e) => onSetMusicVolume(parseFloat(e.target.value))}
-                className="w-full h-2 rounded-lg accent-cyan-400 bg-slate-700/50 cursor-pointer"
+                className="flat-slider-horizontal"
+                style={{
+                  '--slider-fill': `linear-gradient(to right, var(--color-x, #22d3ee) 0%, var(--color-x, #22d3ee) ${musicEnabled ? Math.round(musicVolume * 100) : 0}%, rgba(148, 163, 184, 0.25) ${musicEnabled ? Math.round(musicVolume * 100) : 0}%, rgba(148, 163, 184, 0.25) 100%)`
+                } as React.CSSProperties}
                 aria-label="Music volume"
               />
               <span className="text-xs font-mono font-bold text-[var(--text-primary)] w-9 text-right shrink-0">

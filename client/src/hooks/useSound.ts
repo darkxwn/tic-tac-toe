@@ -59,6 +59,8 @@ export function useSound() {
     };
   }, []);
 
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const setSoundVolume = useCallback((newVol: number) => {
     const clamped = Math.max(0, Math.min(1, newVol));
     setSoundVolumeState(clamped);
@@ -74,11 +76,15 @@ export function useSound() {
       }
     }
 
-    try {
-      localStorage.setItem(SOUND_VOLUME_KEY, String(clamped));
-    } catch {
-      // ignore
-    }
+    // Дебаунс сохранения в localStorage, чтобы не блокировать поток на мобильных при перетаскивании
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = setTimeout(() => {
+      try {
+        localStorage.setItem(SOUND_VOLUME_KEY, String(clamped));
+      } catch {
+        // ignore
+      }
+    }, 250);
 
     movePoolRef.current.forEach((a) => {
       a.volume = Math.min(1, clamped * 0.7);

@@ -561,11 +561,15 @@ export function App() {
                         type="range"
                         min="0"
                         max="1"
-                        step="0.05"
+                        step="0.01"
                         value={soundEnabled ? soundVolume : 0}
                         onChange={(e) => setSoundVolume(parseFloat(e.target.value))}
-                        className="w-1.5 h-24 accent-cyan-400 cursor-pointer"
-                        style={{ writingMode: 'vertical-lr', direction: 'rtl' }}
+                        className="flat-slider-vertical cursor-pointer"
+                        style={{
+                          writingMode: 'vertical-lr',
+                          direction: 'rtl',
+                          '--slider-fill': `linear-gradient(to top, var(--color-x, #22d3ee) 0%, var(--color-x, #22d3ee) ${soundEnabled ? Math.round(soundVolume * 100) : 0}%, rgba(148, 163, 184, 0.25) ${soundEnabled ? Math.round(soundVolume * 100) : 0}%, rgba(148, 163, 184, 0.25) 100%)`
+                        } as React.CSSProperties}
                         aria-label="Sound volume"
                       />
                     </div>
@@ -604,11 +608,15 @@ export function App() {
                         type="range"
                         min="0"
                         max="1"
-                        step="0.05"
+                        step="0.01"
                         value={musicEnabled ? musicVolume : 0}
                         onChange={(e) => setMusicVolume(parseFloat(e.target.value))}
-                        className="w-1.5 h-24 accent-cyan-400 cursor-pointer"
-                        style={{ writingMode: 'vertical-lr', direction: 'rtl' }}
+                        className="flat-slider-vertical cursor-pointer"
+                        style={{
+                          writingMode: 'vertical-lr',
+                          direction: 'rtl',
+                          '--slider-fill': `linear-gradient(to top, var(--color-x, #22d3ee) 0%, var(--color-x, #22d3ee) ${musicEnabled ? Math.round(musicVolume * 100) : 0}%, rgba(148, 163, 184, 0.25) ${musicEnabled ? Math.round(musicVolume * 100) : 0}%, rgba(148, 163, 184, 0.25) 100%)`
+                        } as React.CSSProperties}
                         aria-label="Music volume"
                       />
                     </div>
